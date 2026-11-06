@@ -1,0 +1,3213 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Controle de Registros de Teletrabalho</title>
+  <!-- Inclusão do Chart.js para o Dashboard -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <style>
+    :root {
+		--bg: #cad2e5;
+		--card-bg: #dce1f3;
+		--border: #a3a8b4;
+		--primary: #2563eb;
+		--primary-hover: #1d4ed8;
+		--danger: #dc2626;
+		--danger-hover: #b91c1c;
+		--text: #1f2937;
+		--subtext: #4b5563;
+		--header-bg: #dce1f3;
+		--input-bg: #e9ecf8;
+		--input-border: #9498a0;
+		--chip-default-bg: dce1f3;
+		--item-bg: #e9eeff;
+		--badge-pts-bg: #e0e7ff;
+		--badge-pts-text: #3730a3;
+		--badge-pts-border: #122c98;
+    }
+
+    [data-theme="dark"] {
+      --bg: #141b2d;
+      --card-bg: #1f2940;
+      --border: #2e3b55;
+      --primary: #3b82f6;
+      --primary-hover: #60a5fa;
+      --danger: #ef4444;
+      --danger-hover: #f87171;
+      --text: #e2e8f0;
+      --subtext: #94a3b8;
+      --header-bg: #1f2940;
+      --input-bg: #141b2d;
+      --input-border: #334155;
+      --chip-default-bg: #1f2940;
+      --item-bg: #182235;
+      --badge-pts-bg: #1e3a8a;
+      --badge-pts-text: #bfdbfe;
+      --badge-pts-border: #ffffff;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; transition: background-color 0.2s, color 0.2s, border-color 0.2s; }
+    body { background-color: var(--bg); color: var(--text); padding: 20px; }
+    
+    .container { max-width: 90%; margin: 0 auto; }
+
+    header {
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 10px; background: var(--header-bg); padding: 16px 20px;
+      border-radius: 8px; border: 1px solid var(--border);
+    }
+    h1 { font-size: 1.25rem; font-weight: 700; color: var(--text); }
+    .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+
+    button {
+      background: var(--primary); color: #fff; border: none; padding: 8px 14px;
+      border-radius: 6px; font-weight: 600; cursor: pointer; font-size: 0.9rem;
+      transition: background 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+    }
+	
+    button:hover { background: var(--primary-hover); }
+    button.btn-danger { background: var(--danger); }
+    button.btn-danger:hover { background: var(--danger-hover); }
+    button.btn-outline { background: transparent; color: var(--text); border: 1px solid var(--border); }
+    button.btn-outline:hover { background: rgba(0,0,0,0.05); }
+    [data-theme="dark"] button.btn-outline:hover { background: rgba(255,255,255,0.08); }
+    button.btn-danger-outline { background: transparent; color: var(--danger); border: 1px solid var(--danger); }
+    button.btn-danger-outline:hover { background: var(--danger); color: #fff; }
+    [data-theme="dark"] button.btn-danger-outline { background: #7f1d1d; color: #ffffff; border-color: #ef4444; }
+    [data-theme="dark"] button.btn-danger-outline:hover { background: var(--danger); color: #fff; }
+    button.btn-info { background: #0284c7; color: #fff; padding: 4px 8px; font-size: 0.8rem; }
+    button.btn-info:hover { background: #0369a1; }
+
+    .badge-pdf-icon {
+      background: #ef4444; color: #ffffff; font-size: 0.65rem; font-weight: 800;
+      padding: 5px 5px; border-radius: 4px; letter-spacing: 0.5px; line-height: 1;
+      display: inline-block; text-transform: uppercase;
+      align-content: center;
+    }
+
+    .btn-info-square {
+      background: #e0e7ff; color: #3730a3; border: 1px solid #c7d2fe;
+      border-radius: 6px; width: 26px; height: 26px;
+      display: inline-flex; justify-content: center; align-items: center;
+      font-weight: bold; font-family: serif; font-size: 0.95rem; cursor: pointer;
+      transition: background 0.2s; padding: 0; flex-shrink: 0;
+    }
+    [data-theme="dark"] .btn-info-square { background: #1e3a8a; color: #93c5fd; border-color: #3b82f6; }
+    .btn-info-square:hover { opacity: 0.8; }
+
+    .card {
+      background: var(--card-bg); border: 1px solid var(--border);
+      border-radius: 8px; padding: 20px; margin-bottom: 20px;
+    }
+    .card-title-bar {
+      display: flex; justify-content: space-between; align-items: center;
+      gap: 12px; margin-bottom: 16px; border-bottom: 1px solid var(--border);
+      padding-bottom: 12px; flex-wrap: wrap;
+    }
+    .card-title { font-size: 1.1rem; font-weight: 700; white-space: nowrap; }
+    
+    .semana-list-item {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px 16px; border: 1px solid var(--border); border-radius: 6px;
+      margin-bottom: 10px; cursor: pointer; background: var(--item-bg); transition: background 0.2s;
+    }
+    .semana-list-item:hover { opacity: 0.9; filter: brightness(1.05); }
+
+    .periodo-inline-group {
+      display: flex; align-items: center; gap: 6px; flex: 1; max-width: 380px; flex-wrap: wrap;
+    }
+    .periodo-inline-group label { font-size: 0.85rem; color: var(--text); white-space: nowrap; }
+
+    .badges-group { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .meta-badge {
+      display: inline-block; background: var(--card-bg); color: var(--subtext);
+      border: 1px solid var(--border); padding: 4px 12px; border-radius: 999px;
+      font-weight: 700; font-size: 0.95rem; white-space: nowrap;
+    }
+    .total-badge {
+      display: inline-block; background: #e0e7ff; color: #3730a3;
+      padding: 4px 12px; border-radius: 999px; font-weight: 700; font-size: 0.95rem;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .total-badge { background: #1e3a8a; color: #bfdbfe; }
+
+    .badge-goal-pending {
+      display: inline-block; background: #ffedd5; color: #9a3412;
+      padding: 4px 12px; border-radius: 5px; font-weight: 600; font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .badge-goal-pending { background: #1e222a; color: #ef743a; }
+
+    .badge-goal-met {
+      display: inline-block; background: #dcfce7; color: #166534;
+      padding: 4px 12px; border-radius: 5px; font-weight: 600; font-size: 0.85rem;
+      white-space: nowrap;
+    }
+    [data-theme="dark"] .badge-goal-met { background: #1e222a; color: #00e751; }
+
+    .badge-score-mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 0.6rem;
+      font-weight: 600;
+      white-space: pre;
+      width: 72px;
+      border: 1px solid;
+    }
+
+    .badge-pontuacao-suave {
+      display: inline-block;
+      color: var(--badge-pts-text);
+      border: 1px solid var(--badge-pts-border);
+      padding: 2px 8px;
+      border-radius: 7px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+	
+    .periodo-badge {
+      display: inline-block; background: var(--card-bg); border: 1px solid var(--border);
+      padding: 8px 16px; border-radius: 8px; font-weight: 600; color: var(--primary);
+      font-size: 0.95rem; margin: 4px; white-space: nowrap;
+    }
+
+    .status-badge {
+      display: inline-block; padding: 2px 10px; border-radius: 12px;
+      font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.3px;
+    }
+    .status-badge.criando { background: #dbeafe; color: #1e40af; border: 1px solid #bfdbfe; }
+    [data-theme="dark"] .status-badge.criando { background: #172554; color: #93c5fd; border-color: #1d4ed8; }
+
+    .status-badge.alterando { background: #ffedd5; color: #9a3412; border: 1px solid #fed7aa; }
+    [data-theme="dark"] .status-badge.alterando { background: #431407; color: #fed7aa; border-color: #c2410c; }
+
+    .status-badge.salvo { background: #dcfce7; color: #166534; border: 1px solid #8cbe9d; }
+    [data-theme="dark"] .status-badge.salvo { background: #052e16; color: #bbf7d0; border-color: #15803d; }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+    .form-group label { font-size: 0.85rem; font-weight: 600; color: var(--subtext); }
+
+    input, select {
+      padding: 8px 12px; border: 1px solid var(--input-border); border-radius: 6px;
+      font-size: 0.95rem; width: 100%; background: var(--input-bg); color: var(--text);
+    }
+    input:focus, select:focus { outline: 2px solid var(--primary); border-color: transparent; }
+    input[readonly], select[disabled] { background: rgba(0,0,0,0.05); cursor: not-allowed; font-weight: bold; color: var(--primary); }
+
+    .rte-container { border: 1px solid var(--input-border); border-radius: 6px; overflow: hidden; background: var(--input-bg); }
+    .rte-container:focus-within { outline: 2px solid var(--primary); border-color: transparent; }
+    .rte-toolbar { background: rgba(0,0,0,0.03); padding: 6px 10px; border-bottom: 1px solid var(--border); display: flex; gap: 4px; flex-wrap: wrap; }
+    .rte-toolbar button { background: transparent; border: 1px solid transparent; border-radius: 4px; padding: 4px 10px; cursor: pointer; font-size: 1rem; color: var(--subtext); font-weight: bold; }
+    .rte-toolbar button:hover { background: rgba(0,0,0,0.08); color: var(--primary); }
+    .rte-editor { padding: 12px; min-height: 80px; max-height: 250px; overflow-y: auto; outline: none; font-size: 0.95rem; line-height: 1.4; color: var(--text); }
+    .rte-editor:empty:before { content: attr(data-placeholder); color: #94a3b8; pointer-events: none; display: block; }
+    .rte-editor a { color: var(--primary); text-decoration: underline; cursor: pointer; }
+
+    /* Correção para exibição dos bullets (listas) */
+    .rte-editor ul, .rte-editor ol,
+    .atividade-content ul, .atividade-content ol,
+    .print-activity-table ul, .print-activity-table ol {
+      margin-left: 24px;
+      margin-top: 4px;
+      margin-bottom: 8px;
+    }
+    .rte-editor li, .atividade-content li, .print-activity-table li {
+      margin-bottom: 4px;
+    }
+
+    .atividade-box { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px; overflow: hidden; background: var(--card-bg); transition: transform 0.2s, box-shadow 0.2s; }
+    
+    /* Background cinza escuro nas atividades no Modo Dark */
+    [data-theme="dark"] .atividade-box { background: #2a3245; }
+    [data-theme="dark"] .atividade-content { background: #2a3245; }
+
+    .atividade-header-bar { padding: 10px 14px; background: var(--item-bg); cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; border-bottom: 1px solid var(--border); gap: 12px; }
+    .atividade-summary { font-size: 0.85rem; color: var(--subtext); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px; flex: 1; }
+    .atividade-summary strong { color: var(--text); font-weight: 600; }
+    .atividade-summary a { color: var(--primary); text-decoration: underline; }
+    .atividade-header-right { display: flex; align-items: center; gap: 4px; }
+    .atividade-icon { font-size: 0.8rem; color: var(--subtext); transition: transform 0.2s; }
+    .atividade-content { display: none; padding: 16px; border-top: 3px solid var(--border); }
+    .atividade-box.active .atividade-content { display: block; }
+    .atividade-box.active .atividade-icon { transform: rotate(180deg); }
+    
+    .atividade-box.dragging { opacity: 0.4; border: 2px dashed var(--primary); transform: scale(0.98); }
+    .atividade-box.drag-over { border: 2px dashed var(--primary); background: rgba(37, 99, 235, 0.05); }
+    
+    .collapse-box { border: 1px solid var(--border); border-radius: 6px; margin-bottom: 16px; overflow: hidden; background: var(--card-bg); }
+    .collapse-header { padding: 10px 14px; background: rgba(0,0,0,0.02); cursor: pointer; display: flex; justify-content: space-between; align-items: center; user-select: none; }
+    .collapse-summary { font-size: 0.85rem; color: var(--subtext); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-right: 10px; }
+    .collapse-summary strong { color: var(--text); font-weight: 600; }
+    .collapse-icon { font-size: 0.8rem; color: var(--subtext); transition: transform 0.2s; }
+    .collapse-content { display: none; padding: 16px; background: var(--card-bg); border-top: 1px solid var(--border); }
+    .collapse-box.active .collapse-content { display: block; }
+    .collapse-box.active .collapse-icon { transform: rotate(180deg); }
+
+    .card-feriados-semana { background: var(--card-bg); border: 1px solid var(--border); border-left: 4px solid var(--primary); border-radius: 8px; padding: 16px 20px; margin-bottom: 20px; }
+    .feriados-header-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px; }
+    .feriados-title { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 700; color: var(--text); }
+    .feriados-title svg { fill: var(--primary); width: 18px; height: 18px; }
+
+    .feriados-list { display: flex; flex-wrap: wrap; gap: 10px; }
+    
+    /* Chips e Badges Padronizados por Categoria */
+    .feriado-chip, .badge-holiday {
+      display: inline-flex; align-items: center; gap: 8px; background: var(--chip-default-bg);
+      border: 1px solid var(--border); color: var(--text); padding: 5px 12px; border-radius: 20px;
+      font-size: 0.82rem; font-weight: 500; transition: all 0.2s ease; user-select: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+    .feriado-chip.clickable { cursor: pointer; }
+    .feriado-chip.clickable:hover { transform: translateY(-1px); border-color: var(--primary); }
+    
+    /* Cores das Categorias - Tema Escuro com Tons Acinzentados e Bordas Coloridas */
+    [data-theme="dark"] .chip-feriado { background: #1e222a; color: #93c5fd; border-color: #3b82f6; }
+    [data-theme="dark"] .chip-ponto-facultativo { background: #1e222a; color: #67e8f9; border-color: #06b6d4; }
+    [data-theme="dark"] .chip-recesso { background: #1e222a; color: #fdba74; border-color: #f97316; }
+    [data-theme="dark"] .chip-reduzido { background: #1e222a; color: #d8b4fe; border-color: #a855f7; }
+    [data-theme="dark"] .chip-ferias { background: #1e222a; color: #86efac; border-color: #22c55e; }
+    [data-theme="dark"] .chip-banco { background: #1e222a; color: #cbd5e1; border-color: #64748b; }
+    [data-theme="dark"] .chip-presencial { background: #1e222a; color: #fde047; border-color: #eab308; }
+	
+    /* Cores das Categorias (Claro e Escuro Suave) */
+    .chip-feriado { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+    .chip-ponto-facultativo { background: #ecfeff; color: #0e7490; border-color: #a5f3fc; }
+    .chip-recesso { background: #fff7ed; color: #c2410c; border-color: #e8c495; }
+    .chip-reduzido { background: #faf5ff; color: #7e22ce; border-color: #c49fed; }
+    .chip-ferias { background: #f0fdf4; color: #15803d; border-color: #8cbe9d; }
+    .chip-banco { background: #f1f5f9; color: #334155; border-color: #cbd5e1; }
+    .chip-presencial { background: #fefce8; color: #a16207; border-color: #e58b09; } 
+
+    .feriado-chip .chip-date { font-weight: 700; color: currentColor; }
+    .feriado-chip .chip-badge-hours { background: rgba(0, 0, 0, 0.08); padding: 2px 6px; border-radius: 12px; font-size: 0.75rem; font-weight: 600; }
+    [data-theme="dark"] .feriado-chip .chip-badge-hours { background: rgba(255, 255, 255, 0.12); }
+    .feriado-chip .btn-remove-feriado { background: transparent; border: none; color: var(--subtext); cursor: pointer; font-size: 1.1rem; line-height: 1; padding: 0 2px; display: flex; align-items: center; border-radius: 50%; transition: color 0.2s; }
+    .feriado-chip .btn-remove-feriado:hover { color: var(--danger); }
+
+    /* Legenda de Cores */
+    .legenda-container {
+      display: flex; flex-wrap: wrap; gap: 12px; background: var(--card-bg);
+      border: 1px solid var(--border); border-radius: 6px; padding: 10px 14px;
+      margin-bottom: 12px; width: 100%; align-items: center;
+    }
+    .legenda-titulo { font-size: 0.8rem; font-weight: 700; color: var(--subtext); margin-right: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .legenda-item { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 500; color: var(--text); }
+    .legenda-bolinha { width: 10px; height: 10px; border-radius: 50%; display: inline-block; }
+
+    /* Estilos do Dashboard */
+    .kpi-card {
+      background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px;
+      padding: 16px; display: flex; flex-direction: column; justify-content: center; align-items: center;
+      text-align: center; box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+    }
+    .kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+    .kpi-label { font-size: 0.85rem; color: var(--subtext); font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;}
+
+    .modal-backdrop { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: center; z-index: 1000; }
+    .modal-backdrop.active { display: flex; }
+    .modal { background: var(--card-bg); border: 1px solid var(--border); border-radius: 8px; width: 90%; max-width: 520px; padding: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.25); color: var(--text); }
+    .modal-title { font-size: 1.15rem; font-weight: 700; margin-bottom: 16px; }
+    .modal-footer { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; flex-wrap: wrap; }
+    .modal-sm { max-width: 400px; text-align: center; }
+    .modal-sm p { margin-bottom: 24px; color: var(--text); font-size: 1rem; line-height: 1.4; }
+
+    .checkbox-label {
+      display: flex; align-items: center; gap: 8px; font-size: 0.88rem;
+      color: var(--text); font-weight: 500; cursor: pointer; margin-top: 6px;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: auto; cursor: pointer; accent-color: var(--primary);
+    }
+
+    /* RESPONSIVIDADE */
+    @media (max-width: 768px) {
+      body { padding: 12px; }
+      .container { max-width: 100%; }
+      header { flex-direction: column; align-items: stretch; gap: 16px; padding: 16px; }
+      .actions { justify-content: flex-start; }
+      
+      .grid-2, .grid-3 { grid-template-columns: 1fr; gap: 12px; }
+      
+      .card-title-bar { flex-direction: column; align-items: flex-start; gap: 12px; }
+      .card-title-bar > div { flex-wrap: wrap; }
+      
+      .semana-list-item { flex-direction: column; align-items: stretch; gap: 12px; }
+      .semana-list-item > div { width: 100%; align-items: flex-start; }
+      .semana-list-item > button { align-self: flex-end; margin-left: 0; width: auto; }
+      
+      .feriados-header-bar { flex-direction: column; align-items: stretch; }
+      .feriados-header-bar button { width: 100%; justify-content: center; }
+      
+      .atividade-header-bar { flex-direction: column; align-items: flex-start; gap: 8px; }
+      .atividade-header-right { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+      
+      .modal { padding: 16px; width: 95%; }
+      .modal-footer { justify-content: stretch; }
+      .modal-footer button { flex: 1; justify-content: center; }
+      
+      .badges-group { width: 100%; justify-content: flex-start; margin-top: 8px; }
+    }
+
+    #printArea { display: none; }
+    @media print {
+      body > * { display: none !important; }
+      #printArea { display: block !important; padding-right: 5px; }
+      body { background: #fff; margin: 0; padding: 0; color: #000; font-family: Arial, Helvetica, sans-serif; font-size: 10pt; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+      .page-break { page-break-before: always; break-before: page; margin-top: 20px; padding-top: 20px; }
+      .print-main-title { font-size: 14pt; font-weight: bold; margin-bottom: 15px; text-align: left; }
+      .print-header-box { border: 1px solid #000; padding: 12px 15px; margin-bottom: 25px; }
+      .print-header-table { border-collapse: collapse; width: 100%; }
+      .print-header-table td { padding: 3px 8px; vertical-align: top; }
+      .print-header-table .label-col { font-weight: bold; text-align: right; width: 150px; white-space: nowrap; }
+      .print-header-table .val-col { text-align: left; }
+      .print-activity-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; page-break-inside: avoid; table-layout: fixed; }
+      .print-activity-table td { border: 1px solid #000; padding: 6px 8px; vertical-align: middle; word-wrap: break-word; overflow-wrap: break-word; }
+      .print-activity-table .label-col { font-weight: bold; background-color: #f2f2f2; }
+      .print-activity-table .sub-label { font-weight: bold; text-align: left; }
+      .print-activity-table .sub-val { text-align: left; }
+      .print-activity-table a { color: #2563eb !important; text-decoration: underline !important; font-weight: normal !important; pointer-events: auto !important; }
+      .print-activity-table a::after { content: " 🔗"; font-size: 0.85em; text-decoration: none; display: inline-block; margin-left: 3px; color: #2563eb !important; }
+      .print-summary-table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; }
+      .print-summary-table th, .print-summary-table td { border: 1px solid #000; padding: 8px 6px; text-align: center; vertical-align: middle; }
+      .print-summary-table th { background-color: #f2f2f2; font-weight: bold; }
+      .print-summary-table .text-left { text-align: left; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>Controle de Registros de Teletrabalho</h1>
+    <div class="actions">
+      <button id="btnTema" class="btn-outline" title="Alternar Tema Claro/Escuro" onclick="alternarTema()">🌙</button>
+      <button id="btnDashboard" class="btn-outline" style="display: none;" onclick="abrirDashboard()">📊 Dashboard</button>
+      <button id="btnNovo" class="btn-outline">✨ Novo</button>
+      <button id="btnAbrir" class="btn-outline">📂 Carregar</button>
+      <button id="btnSalvar" class="btn-outline" style="display: none;">✔️ Salvar</button>
+    </div>
+  </header>
+
+  <div id="divUltimaAlteracao" style="display: none; justify-content: space-between; align-items: center; margin-bottom: 16px; font-size: 0.8rem; font-weight: bold; color: var(--subtext);">
+    <div>
+      <span>Situação: </span><span id="lblSituacao" class="status-badge criando">Criando</span>
+    </div>
+    <div style="font-style: italic;">
+      Última alteração: <span id="lblUltimaAlteracao">-</span>
+    </div>
+  </div>
+
+  <div id="viewInicial" class="card" style="text-align: center; padding: 40px 20px;">
+    <h2 style="margin-bottom: 10px; color: var(--text);">Bem-vindo ao Controle de Registros de Teletrabalho</h2>
+    <p style="color: var(--subtext); margin-bottom: 32px;">Clique em <strong>Novo</strong> informe os dados de identificação e depois inclua as informações de trabalho semanal ou clique em <strong>Carregar</strong> para abrir arquivo salvo.</p>
+    
+    <div style="text-align: left; margin: 0 auto; background: var(--item-bg); padding: 24px; border-radius: 8px; border: 1px solid var(--border);">
+      <h3 style="margin-bottom: 20px; color: var(--primary); font-size: 1.1rem;">Vantagens</h3>
+      <div class="grid-2">
+        <div style="display: flex; gap: 12px;">
+          <span style="font-size: 1.4rem;">⚡</span>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 4px; color: var(--text);">Cálculo Automático</strong>
+            <span style="font-size: 0.85rem; color: var(--subtext); line-height: 1.4; display: block;">As metas, feriados nacionais e reduções de expediente são calculados e descontados automaticamente.</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+          <span style="font-size: 1.4rem;">🔒</span>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 4px; color: var(--text);">Privacidade e Offline</strong>
+            <span style="font-size: 0.85rem; color: var(--subtext); line-height: 1.4; display: block;">Os seus dados são salvos num arquivo JSON local na sua máquina. Não há envio de dados para servidores externos.</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+          <span style="font-size: 1.4rem;">📄</span>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 4px; color: var(--text);">Geração de Relatórios</strong>
+            <span style="font-size: 0.85rem; color: var(--subtext); line-height: 1.4; display: block;">Exporte resumos anuais ou consolidados semanais diretamente para formato PDF, prontos para envio.</span>
+          </div>
+        </div>
+        
+        <div style="display: flex; gap: 12px;">
+          <span style="font-size: 1.4rem;">📱</span>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 4px; color: var(--text);">Multi-dispositivo e Temas</strong>
+            <span style="font-size: 0.85rem; color: var(--subtext); line-height: 1.4; display: block;">Interface totalmente responsiva (celulares, tablets ou PC) com suporte integrado a modo claro e escuro.</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <span style="font-size: 1.4rem;">🎯</span>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 4px; color: var(--text);">Acompanhamento Visual</strong>
+            <span style="font-size: 0.85rem; color: var(--subtext); line-height: 1.4; display: block;">Indicadores de cor mostram instantaneamente o progresso da pontuação e se a meta semanal foi atingida.</span>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <span style="font-size: 1.4rem;">📊</span>
+          <div>
+            <strong style="display: block; font-size: 0.95rem; margin-bottom: 4px; color: var(--text);">Dashboard e Estatísticas</strong>
+            <span style="font-size: 0.85rem; color: var(--subtext); line-height: 1.4; display: block;">Painel gráfico gerado automaticamente com seu hit rate, ranking de tarefas, horas trabalhadas e saldo de pontos.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="viewLista" style="display: none;">
+    <div class="card" style="margin-bottom: 20px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; border-bottom: 1px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; gap: 12px;">
+        <h2 class="card-title">Dados de Identificação</h2>
+		<button class="btn-outline" style="font-size: 0.8rem; padding: 4px 8px;" onclick="abrirModalEdicaoGlobal()">⚙️ Configurar</button>
+      </div>
+      <div class="grid-3" style="font-size: 0.9rem;">
+        <div><strong style="color: var(--subtext);">Servidor:</strong> <br><span id="lblGlobalServidor" style="font-weight: 500;"></span></div>
+        <div><strong style="color: var(--subtext);">Responsável:</strong> <br><span id="lblGlobalResponsavel" style="font-weight: 500;"></span></div>
+        <div><strong style="color: var(--subtext);">Unidade:</strong> <br><span id="lblGlobalUnidade" style="font-weight: 500;"></span></div>
+      </div>
+    </div>
+
+    <div class="collapse-box" id="collapseFeriadosGlobaisBox" style="margin-bottom: 20px;">
+      <div class="collapse-header" onclick="toggleCollapse('collapseFeriadosGlobaisBox')">
+        <div class="collapse-summary"><strong>Paralizações do Teletrabalho</strong></div>
+        <span class="collapse-icon">▼</span>
+      </div>
+      <div class="collapse-content">
+        <div class="feriados-header-bar" style="margin-bottom: 12px;">
+          <div class="legenda-container" style="margin-bottom: 0; flex: 1;">
+            <span class="legenda-titulo">Legenda:</span>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #1e40af;"></span> Feriado</div>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #0e7490;"></span> Ponto Fac.</div>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #c2410c;"></span> Recesso</div>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #7e22ce;"></span> Exp. Reduzido</div>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #15803d;"></span> Férias</div>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #334155;"></span> Banco Horas</div>
+            <div class="legenda-item"><span class="legenda-bolinha" style="background: #a16207;"></span> Presencial</div>
+          </div>
+          <button type="button" class="btn-outline" style="font-size: 0.85rem; white-space: nowrap; height: 41px;" onclick="abrirModalFeriado(-1)">➕ Nova Paralização</button>
+        </div>
+
+        <div class="feriados-list" id="containerFeriadosGlobais" style="margin-top: 10px;"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title-bar">
+        <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+          <span class="card-title" id="lblAnoLista">Semanas do Ano</span>
+          <select id="filtroMeta" onchange="renderListaSemanas()" style="width: auto; padding: 4px 8px; font-size: 0.85rem; height: 32px;">
+            <option value="todos" selected>Meta: Todas</option>
+            <option value="zerada">Meta: Zerada (= 0)</option>
+            <option value="preenchida">Meta: Preenchida (> 0)</option>
+            <option value="atingida">Meta: Atingida</option>
+            <option value="atingir">Meta: A Atingir</option>
+          </select>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnAbrirModalPdfResumo" class="btn-outline"><span class="badge-pdf-icon">PDF</span> Resumo de Semanas</button>
+          <button id="btnAbrirModalPdfConsolidado" class="btn-outline"><span class="badge-pdf-icon">PDF</span> Semanas Consolidadas</button>
+          <button id="btnAdicionarSemanaLista" class="btn-outline">➕ Nova Semana</button>
+        </div>
+      </div>
+      <div id="containerListaSemanas"></div>
+    </div>
+  </div>
+
+  <div id="viewDetalhes" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <button id="btnVoltarLista" class="btn-danger-outline">Lista Semanas</button>
+      <button id="btnImprimir" class="btn-outline" onclick="imprimirSemanaAtual()"><span class="badge-pdf-icon">PDF</span> Relatório desta Semana</button>
+    </div>
+
+    <div class="card">
+      <div class="card-title-bar" style="margin-bottom: 0; border-bottom: none; padding-bottom: 0;">
+        <span class="card-title" id="lblTituloCardSemana">Semana do Ano</span>
+        <div class="periodo-inline-group">
+          <label><strong>Período:</strong></label>
+          <span id="dtInicioPeriodo" style="font-weight: 600; color: var(--primary); padding: 6px 8px;"></span>
+          <span style="color: var(--subtext); font-weight: 500;">a</span>
+          <span id="dtFimPeriodo" style="font-weight: 600; color: var(--primary); padding: 6px 8px;"></span>
+        </div>
+        <div class="badges-group">
+          <span class="meta-badge">Meta: <span id="lblMeta">121</span></span>
+          <span class="total-badge">Pontuação: <span id="lblPontuacaoTotal">0</span></span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card-feriados-semana">
+      <div class="feriados-header-bar">
+        <div class="feriados-title">
+          <svg viewBox="0 0 24 24"><path d="M19,4H18V2H16V4H8V2H6V4H5C3.89,4 3,4.89 3,6V20A2,2 0 0,0 5,22H19A2,2 0 0,0 21,20V6A2,2 0 0,0 19,4M19,20H5V10H19V20M19,8H5V6H19V8M9,14H7V12H9V14M13,14H11V12H13V14M17,14H15V12H17V14M9,18H7V16H9V18M13,18H11V16H13V18M17,18H15V16H17V18Z"/></svg>
+          <span>Paralizações do Teletrabalho</span>
+        </div>
+      </div>
+      <div class="feriados-list" id="containerFeriados"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-title-bar" style="border-bottom: 1px solid var(--border); margin-bottom: 16px;">
+        <span class="card-title">Lista de Atividades</span>
+        <button id="btnAdicionarAtividade" class="btn-outline" style="font-size: 0.8rem;">➕ Nova Atividade</button>
+      </div>
+      <div id="containerAtividades"></div>
+    </div>
+  </div>
+
+  <!-- Tela de Dashboard -->
+  <div id="viewDashboard" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; flex-wrap: wrap; gap: 12px;">
+      <h2 style="font-size: 1.25rem; font-weight: 700; color: var(--primary); margin: 0;">Dashboard Estatístico</h2>
+      <button class="btn-danger-outline" onclick="mostrarView('viewLista')">Voltar para Lista</button>
+    </div>
+
+    <!-- KPIs em Grid de 4 colunas -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 20px;">
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiSemanas">0</div>
+        <div class="kpi-label" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+          Semanas em Teletrabalho <button class="btn-info-square" style="width: 20px; height: 20px; font-size: 0.75rem;" onclick="mostrarInfoKpi('Semanas', 'Total de semanas registradas no sistema com meta maior que zero.')">i</button>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiHitRate">0%</div>
+        <div class="kpi-label" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+          Taxa Sucesso <button class="btn-info-square" style="width: 20px; height: 20px; font-size: 0.75rem;" onclick="mostrarInfoKpi('Taxa de Sucesso', 'Percentual de semanas em que a pontuação total alcançou ou superou a meta estabelecida.')">i</button>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiSaldo">0</div>
+        <div class="kpi-label" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+          Saldo Acumulado <button class="btn-info-square" style="width: 20px; height: 20px; font-size: 0.75rem;" onclick="mostrarInfoKpi('Saldo Acumulado', 'Diferença total entre a pontuação alcançada e a meta exigida acumulada no ano.')">i</button>
+        </div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-value" id="kpiHoras">0h</div>
+        <div class="kpi-label" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+          Equivalência em Horas <button class="btn-info-square" style="width: 20px; height: 20px; font-size: 0.75rem;" onclick="mostrarInfoKpi('Equivalência em Horas', 'Soma total do esforço (em horas) de todas as atividades lançadas.')">i</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráfico Full Width (Evolução) -->
+    <div class="card" style="margin-bottom: 20px;">
+      <h3 style="font-size: 1rem; margin-bottom: 16px; color: var(--text);">Evolução: Pontuação vs Meta</h3>
+      <div style="position: relative; height: 300px; width: 100%; overflow-x: auto;">
+        <div style="min-width: 800px; height: 100%;">
+          <canvas id="chartEvolucao"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Gráficos Secundários -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 16px; margin-bottom: 20px;">
+      <div class="card" style="margin-bottom: 0;">
+        <h3 style="font-size: 1rem; margin-bottom: 16px; color: var(--text); text-align: center;">Distribuição da Jornada (Dias)</h3>
+        <canvas id="chartDias" style="max-height: 250px;"></canvas>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <h3 style="font-size: 1rem; margin-bottom: 16px; color: var(--text);">Top 5: Ocorrências (Frequência)</h3>
+        <canvas id="chartRanking" style="max-height: 250px;"></canvas>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <h3 style="font-size: 1rem; margin-bottom: 16px; color: var(--text);">Top 5: Tempo Gasto (Horas)</h3>
+        <canvas id="chartTempo" style="max-height: 250px;"></canvas>
+      </div>
+      <div class="card" style="margin-bottom: 0;">
+        <h3 style="font-size: 1rem; margin-bottom: 16px; color: var(--text); text-align: center;">Distribuição de Complexidade</h3>
+        <canvas id="chartComplexidade" style="max-height: 250px;"></canvas>
+      </div>	  
+    </div>
+  </div>
+
+</div>
+
+<div id="printArea"></div>
+
+<div class="modal-backdrop" id="modalInfoSemana">
+  <div class="modal modal-sm" style="max-width: 450px;">
+    <h3 style="margin-bottom: 16px;" id="lblInfoSemanaTitulo">Período da Semana</h3>
+    <div style="margin-bottom: 24px; color: var(--subtext); line-height: 1.6;">
+      Esta semana corresponde ao intervalo de:
+      <div style="margin-top: 12px; display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 8px;">
+        <span class="periodo-badge" id="lblInfoSemanaInicio"></span>
+        <span style="font-weight: bold; color: var(--subtext);">a</span>
+        <span class="periodo-badge" id="lblInfoSemanaFim"></span>
+      </div>
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn-outline" onclick="document.getElementById('modalInfoSemana').classList.remove('active')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalInfoKpi">
+  <div class="modal modal-sm" style="max-width: 450px;">
+    <h3 style="margin-bottom: 16px;" id="lblInfoKpiTitulo">KPI</h3>
+    <div style="margin-bottom: 24px; color: var(--subtext); line-height: 1.6;" id="lblInfoKpiDescricao">
+    </div>
+    <div class="modal-footer" style="justify-content: center;">
+      <button class="btn-outline" onclick="document.getElementById('modalInfoKpi').classList.remove('active')">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalPdfConsolidado">
+  <div class="modal">
+    <div class="modal-title">Documento Semanas Consolidadas</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>De (Semana)</label>
+        <select id="selSemanaInicial"></select>
+      </div>
+      <div class="form-group">
+        <label>Até (Semana)</label>
+        <select id="selSemanaFinal"></select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top: 4px;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="chkDescartarZeradasConsolidado">
+        <span>Descartar semanas com meta zerada (= 0)</span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="document.getElementById('modalPdfConsolidado').classList.remove('active')">Cancelar</button>
+      <button id="btnGerarPdfConsolidado">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalPdfResumo">
+  <div class="modal">
+    <div class="modal-title">Resumo de Semanas</div>
+    <div class="grid-2">
+      <div class="form-group">
+        <label>De (Semana)</label>
+        <select id="selSemanaInicialResumo"></select>
+      </div>
+      <div class="form-group">
+        <label>Até (Semana)</label>
+        <select id="selSemanaFinalResumo"></select>
+      </div>
+    </div>
+    <div class="form-group" style="margin-top: 4px;">
+      <label class="checkbox-label">
+        <input type="checkbox" id="chkDescartarZeradasResumo">
+        <span>Descartar semanas com meta zerada (= 0)</span>
+      </label>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" onclick="document.getElementById('modalPdfResumo').classList.remove('active')">Cancelar</button>
+      <button id="btnGerarPdfResumo">Gerar PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalCustomAlert">
+  <div class="modal modal-sm">
+    <h3 style="margin-bottom: 12px;">Aviso</h3>
+    <p id="msgCustomAlert"></p>
+    <div class="modal-footer" style="justify-content: center;">
+      <button id="btnCustomAlertOk" class="btn-primary">OK</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalCustomConfirm">
+  <div class="modal modal-sm">
+    <h3 style="margin-bottom: 12px;">Confirmação</h3>
+    <p id="msgCustomConfirm"></p>
+    <div class="modal-footer" style="justify-content: center; gap: 12px;">
+      <button class="btn-outline" id="btnCustomConfirmCancel" >Cancelar</button>
+      <button class="btn-danger" id="btnCustomConfirmOk" >Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalNovoRelatorio">
+  <div class="modal">
+    <div class="modal-title">Dados de Identificação</div>
+    <div class="form-group">
+      <label>Servidor</label>
+      <input type="text" id="globalServidor" placeholder="Nome do Servidor">
+    </div>
+    <div class="form-group">
+      <label>Responsável</label>
+      <input type="text" id="globalResponsavel" placeholder="Nome do Responsável">
+    </div>
+    <div class="form-group">
+      <label>Unidade</label>
+      <input type="text" id="globalUnidade" placeholder="Unidade de Lotação">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" id="btnCancelarModalNovoRelatorio">Cancelar</button>
+      <button id="btnConfirmarModalNovoRelatorio">Salvar e Continuar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalNovaSemana">
+  <div class="modal">
+    <div class="modal-title">Adicionar Nova Semana</div>
+    <div class="form-group">
+      <label id="lblModalSelect">Selecione a Semana</label>
+      <select id="selSemanaAnoModal"></select>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" id="btnCancelarModalNovaSemana">Cancelar</button>
+      <button id="btnConfirmarModalNovaSemana">Nova Semana</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalEdicaoAtividade">
+  <div class="modal" style="max-width: 700px;">
+    <div class="modal-title" id="modalAtividadeTitulo">Atividade</div>
+    <div class="form-group">
+      <label>Atividade</label>
+      <select id="modalSelAtividade" onchange="atualizarOpcoesEsforcoModal()"></select>
+    </div>
+    
+    <div class="form-group">
+      <label>Evidência</label>
+      <div class="rte-container">
+        <div class="rte-toolbar">
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold', false, null)" title="Negrito"><b>B</b></button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic', false, null)" title="Itálico"><i>I</i></button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline', false, null)" title="Sublinhado"><u>U</u></button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertUnorderedList', false, null)" title="Lista com Marcadores">•</button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertOrderedList', false, null)" title="Lista Numerada">1.</button>
+          <button type="button" onmousedown="event.preventDefault(); openLinkModalRTE('modalTxtEvidencia')" title="Inserir / Editar Link">🔗</button>
+        </div>
+        <div class="rte-editor" contenteditable="true" id="modalTxtEvidencia" data-placeholder="Descreva a evidência..."></div>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label>Justificativa</label>
+      <div class="rte-container">
+        <div class="rte-toolbar">
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('bold', false, null)" title="Negrito"><b>B</b></button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('italic', false, null)" title="Itálico"><i>I</i></button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('underline', false, null)" title="Sublinhado"><u>U</u></button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertUnorderedList', false, null)" title="Lista com Marcadores">•</button>
+          <button type="button" onmousedown="event.preventDefault(); document.execCommand('insertOrderedList', false, null)" title="Lista Numerada">1.</button>
+          <button type="button" onmousedown="event.preventDefault(); openLinkModalRTE('modalTxtJustificativa')" title="Inserir / Editar Link">🔗</button>
+        </div>
+        <div class="rte-editor" contenteditable="true" id="modalTxtJustificativa" data-placeholder="Insira a justificativa..."></div>
+      </div>
+    </div>
+
+    <div class="grid-2">
+      <div class="form-group">
+        <label>Esforço (Tempo)</label>
+        <select id="modalSelEsforco"></select>
+      </div>
+      <div class="form-group">
+        <label>Complexidade</label>
+        <select id="modalSelComplexidade">
+          <option value="Baixa">Baixa (x1.0)</option>
+          <option value="Média">Média (x1.4)</option>
+          <option value="Alta">Alta (x2.0)</option>
+        </select>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" id="btnCancelarModalAtividade">Cancelar</button>
+      <button id="btnConfirmarModalAtividade">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalLinkUI" style="z-index: 1050;">
+  <div class="modal modal-sm" style="max-width: 400px; text-align: left;">
+    <h3 style="margin-bottom: 16px;" id="lblModalLinkTitulo">Inserir Link</h3>
+    <div class="form-group">
+      <label>URL (obrigatório)</label>
+      <input type="url" id="txtLinkUrl" placeholder="https://...">
+    </div>
+    <div class="form-group">
+      <label>Rótulo do Link (opcional)</label>
+      <input type="text" id="txtLinkRotulo" placeholder="Texto para exibição">
+    </div>
+    <div class="modal-footer" style="justify-content: flex-end; margin-top: 16px;">
+      <button class="btn-outline" onclick="fecharModalLink()">Cancelar</button>
+      <button id="btnConfirmarLink">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalFeriadoRecesso">
+  <div class="modal">
+    <div class="modal-title" id="lblTituloModalFeriado">Adicionar Paralização</div>
+    <div class="form-group">
+      <label>Categoria</label>
+      <select id="modalSelCategoria" onchange="alterarCamposModalFeriado()">
+        <option value="feriado">Feriado</option>
+        <option value="ponto_facultativo">Ponto Facultativo</option>
+        <option value="recesso">Recesso / Expediente Reduzido (Data ou Período)</option>
+        <option value="ferias">Férias</option>
+        <option value="banco_horas">Banco de Horas (Dias Completos)</option>
+        <option value="presencial">Presencial (Dias Completos)</option>
+      </select>
+    </div>
+    <div class="form-group" id="grupoModalDataUnica">
+      <label>Data</label>
+      <input type="date" id="modalDtFeriadoUnico" title="Data Única">
+    </div>
+    <div class="grid-2" id="grupoModalDatasIntervalo" style="display: none;">
+      <div class="form-group">
+        <label>Data Inicial</label>
+        <input type="date" id="modalDtInicioRecesso" title="Data Inicial">
+      </div>
+      <div class="form-group">
+        <label>Data Final (Opcional)</label>
+        <input type="date" id="modalDtFimRecesso" title="Data Final">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Descrição</label>
+      <input type="text" id="modalTxtDescricao" placeholder="Ex: Tiradentes, Férias, Dia Presencial">
+    </div>
+    <div id="grupoModalOpcoesRecesso" style="display: none;">
+      <div class="form-group">
+        <label>Tipo de Redução por Dia</label>
+        <select id="modalSelTipoReducao" onchange="toggleModalHorasReducao()">
+          <option value="total">Dia Inteiro (Redução de 7h / 100%)</option>
+          <option value="parcial">Redução Parcial em Horas</option>
+        </select>
+      </div>
+      <div class="form-group" id="grupoModalHorasInput" style="display: none;">
+        <label>Horas Reduzidas por Dia (1h a 7h)</label>
+        <input type="number" id="modalNumHoras" min="0.1" max="7" step="any" value="2" placeholder="Ex: 2">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-outline" id="btnCancelarModalFeriado">Cancelar</button>
+      <button id="btnConfirmarModalFeriado">Salvar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modalExplicacaoAtividade">
+  <div class="modal">
+    <div class="modal-title" id="modalExplicacaoTitulo">Detalhes da Atividade</div>
+    <div class="form-group">
+      <label style="color: var(--primary);">Descrição (Referência):</label>
+      <p id="modalExplicacaoDescricao" style="font-size: 0.9rem; line-height: 1.4; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; border: 1px solid var(--border); white-space: pre-line;"></p>
+    </div>
+    <div class="form-group">
+      <label style="color: var(--primary);">Fator de Pontuação (Referência):</label>
+      <p id="modalExplicacaoPontuacao" style="font-size: 0.9rem; line-height: 1.4; background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; border: 1px solid var(--border);"></p>
+    </div>
+    <div class="modal-footer">
+      <button id="btnFecharModalExplicacao" class="btn-outline">Fechar</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let fileHandle = null;
+  const ANO_CORRENTE = new Date().getFullYear();
+
+  let dadosArquivo = null; 
+  let dados = null; 
+  let indexSemanaAtiva = -1;
+  let abrindoPelaPrimeiraVez = false;
+  let draggedAtividadeIndex = null;
+  let chartInstances = {};
+  
+  let indexFeriadoModal = -1;
+  let situacaoAtual = 'Salvo';
+
+  function setupModalShortcuts() {
+    document.addEventListener('keydown', (e) => {
+      const activeModals = document.querySelectorAll('.modal-backdrop.active');
+      if (activeModals.length === 0) return;
+      
+      const activeModal = activeModals[activeModals.length - 1];
+      const isTypingText = e.target.tagName === 'TEXTAREA' || e.target.isContentEditable;
+      
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        const cancelBtn = activeModal.querySelector('.btn-outline, #btnCustomConfirmCancel, #btnFecharModalExplicacao');
+        if (cancelBtn) cancelBtn.click();
+      } else if (e.key === 'Enter' && !isTypingText) {
+        e.preventDefault();
+        const saveBtn = activeModal.querySelector('.modal-footer button:not(.btn-outline):not(.btn-danger-outline), #btnCustomAlertOk');
+        if (saveBtn) saveBtn.click();
+      }
+    });
+  }
+  document.addEventListener('DOMContentLoaded', setupModalShortcuts);
+
+  function showModalFocus(modalId) {
+    const modal = document.getElementById(modalId);
+    if (!modal) return;
+    modal.classList.add('active');
+    
+    setTimeout(() => {
+      const focusableInput = modal.querySelector('input:not([type="hidden"]), select, textarea, [contenteditable="true"]');
+      const cancelBtn = modal.querySelector('.btn-outline, #btnCustomConfirmCancel');
+      const okBtn = modal.querySelector('#btnCustomAlertOk, #btnFecharModalExplicacao');
+      
+      if (modalId === 'modalCustomAlert' || modalId === 'modalExplicacaoAtividade' || modalId === 'modalInfoSemana') {
+        if (okBtn) okBtn.focus();
+        else if (cancelBtn) cancelBtn.focus();
+      } else if (focusableInput) {
+        focusableInput.focus();
+      } else if (modalId === 'modalCustomConfirm') {
+        if (cancelBtn) cancelBtn.focus();
+      } else {
+        if (cancelBtn) cancelBtn.focus();
+      }
+    }, 50);
+  }
+
+  function alternarTema() {
+    const htmlEl = document.documentElement;
+    const btnTema = document.getElementById('btnTema');
+    if (htmlEl.getAttribute('data-theme') === 'dark') {
+      htmlEl.removeAttribute('data-theme');
+      btnTema.innerText = '🌙';
+      localStorage.setItem('tema_teletrabalho', 'light');
+    } else {
+      htmlEl.setAttribute('data-theme', 'dark');
+      btnTema.innerText = '☀️';
+      localStorage.setItem('tema_teletrabalho', 'dark');
+    }
+    if (document.getElementById('viewDashboard').style.display === 'block') {
+      renderDashboard();
+    }
+  }
+
+  if (localStorage.getItem('tema_teletrabalho') === 'dark') {
+    document.documentElement.setAttribute('data-theme', 'dark');
+    document.addEventListener('DOMContentLoaded', () => {
+      const btn = document.getElementById('btnTema');
+      if(btn) btn.innerText = '☀️';
+    });
+  }
+
+  function getEaster(year) {
+    const a = year % 19;
+    const b = Math.floor(year / 100);
+    const c = year % 100;
+    const d = Math.floor(b / 4);
+    const e = b % 4;
+    const f = Math.floor((b + 8) / 25);
+    const g = Math.floor((b - f + 1) / 3);
+    const h = (19 * a + b - d - g + 15) % 30;
+    const i = Math.floor(c / 4);
+    const k = c % 4;
+    const l = (32 + 2 * e + 2 * i - h - k) % 7;
+    const m = Math.floor((a + 11 * h + 22 * l) / 451);
+    const month = Math.floor((h + l - 7 * m + 114) / 31);
+    const day = ((h + l - 7 * m + 114) % 31) + 1;
+    return new Date(year, month - 1, day);
+  }
+
+  function addDays(date, days) {
+    const result = new Date(date);
+    result.setDate(result.getDate() + days);
+    return result;
+  }
+
+  function gerarFeriadosNacionais(ano) {
+    const easter = getEaster(ano);
+    const carnavalSeg = addDays(easter, -48);
+    const carnavalTer = addDays(easter, -47);
+    const quartaSanta = addDays(easter, -4);
+    const domingoPascoa = easter;
+    const corpusChristi = addDays(easter, 60);
+
+    return [
+      { data: `20/12/${ano - 1}`, dataFim: `31/12/${ano - 1}`, descricao: "Recesso Forense", fator: 1.0, fixo: true },
+      { data: `01/01/${ano}`, dataFim: `06/01/${ano}`, descricao: "Recesso Forense", fator: 1.0, fixo: true },
+      { data: `07/01/${ano}`, dataFim: `20/01/${ano}`, descricao: "Expediente Reduzido", fator: 2 / 7.0, fixo: true },
+      { data: `01/01/${ano}`, dataFim: `01/01/${ano}`, descricao: "Confraternização Universal", fator: 1.0, fixo: true },
+      { data: formatarDataBR(carnavalSeg), dataFim: formatarDataBR(carnavalTer), descricao: "Carnaval", fator: 1.0, fixo: true },
+      { data: formatarDataBR(quartaSanta), dataFim: formatarDataBR(domingoPascoa), descricao: "Semana Santa", fator: 1.0, fixo: true },
+      { data: `21/04/${ano}`, dataFim: `21/04/${ano}`, descricao: "Tiradentes", fator: 1.0, fixo: true },
+      { data: `01/05/${ano}`, dataFim: `01/05/${ano}`, descricao: "Dia do Trabalhador", fator: 1.0, fixo: true },
+      { data: formatarDataBR(corpusChristi), dataFim: formatarDataBR(corpusChristi), descricao: "Corpus Christi", fator: 1.0, fixo: true },
+      { data: `07/09/${ano}`, dataFim: `07/09/${ano}`, descricao: "Independência do Brasil", fator: 1.0, fixo: true },
+      { data: `12/10/${ano}`, dataFim: `12/10/${ano}`, descricao: "Nossa Senhora Aparecida", fator: 1.0, fixo: true },
+      { data: `02/11/${ano}`, dataFim: `02/11/${ano}`, descricao: "Finados", fator: 1.0, fixo: true },
+      { data: `15/11/${ano}`, dataFim: `15/11/${ano}`, descricao: "Proclamação da República", fator: 1.0, fixo: true },
+      { data: `20/11/${ano}`, dataFim: `20/11/${ano}`, descricao: "Dia da Consciência Negra", fator: 1.0, fixo: true },
+      { data: `25/12/${ano}`, dataFim: `25/12/${ano}`, descricao: "Natal", fator: 1.0, fixo: true }
+    ];
+  }
+
+  const CONFIG_PADRAO = { servidor: "", unidade: "", responsavel: "" };
+  const PESOS_COMPLEXIDADE = { 'Baixa': 1.0, 'Média': 1.4, 'Alta': 2.0 };
+  
+  const OPCOES_ESFORCO = [
+    { label: "15 minutos", valor: 0.25, basePts: 1 }, { label: "30 minutos", valor: 0.5, basePts: 2 },
+    { label: "1 hora", valor: 1, basePts: 4 }, { label: "2 horas", valor: 2, basePts: 8 },
+    { label: "3 horas", valor: 3, basePts: 12 }, { label: "1 dia", valor: 7, basePts: 22 },
+    { label: "2 dias", valor: 14, basePts: 44 }, { label: "3 dias", valor: 21, basePts: 66 },
+    { label: "4 dias", valor: 28, basePts: 88 }, { label: "5 dias", valor: 35, basePts: 110 }
+  ];
+
+  const OPCOES_ESFORCO_GRANULAR = [];
+  for (let i = 1; i <= 440; i++) {
+    let horas = Math.floor((i * 15) / 60);
+    let minutos = (i * 15) % 60;
+    let labelParts = [];
+    if (horas > 0) labelParts.push(`${horas} hora${horas > 1 ? 's' : ''}`);
+    if (minutos > 0) labelParts.push(`${minutos} minutos`);
+    let label = labelParts.join(' e ');
+    OPCOES_ESFORCO_GRANULAR.push({ label: label, valor: i * 0.25, basePts: i });
+  }
+
+  const TABELA_REFERENCIA_ATIVIDADES = [
+    { nome: "Relatório de atividades", descricao: "Elaboração e envio do relatório de atividades para controle das metas, conforme PTI.\nComplexidade baixa.", pontuacaoRef: "12 pontos" },
+    { nome: "Reunião", descricao: "Participação em reunião: \n● Convidado: complexidade baixa \n● Organizador: complexidade média", pontuacaoRef: "1 ponto de esforço para cada 15 minutos" },
+    { nome: "Tarefa no Jira", descricao: "Implementar tarefa registrada no Jira, independentemente do tipo (e.g. task, issue, story).", pontuacaoRef: "Conforme esforço" },
+    { nome: "Tarefa no GitLab", descricao: "Implementar issue registradas no GitLab.", pontuacaoRef: "Conforme esforço" },
+    { nome: "Tarefa no Basecamp", descricao: "Implementar tarefas ou cartões kanban registrados no Basecamp.", pontuacaoRef: "Conforme esforço" },
+	{ nome: "Tarefas no Cherwell", descricao: "Resolver/criar tarefa em help desk.", pontuacaoRef: "Conforme esforço" },
+	{ nome: "Tarefas no GSTI", descricao: "Resolver/criar tarefa em help desk.", pontuacaoRef: "Conforme esforço" },
+    { nome: "Pendências no SonarQube", descricao: "Tratamento de security hotspot, e correção de issue existente", pontuacaoRef: "Conforme esforço" },
+    { nome: "Capacitação", descricao: "Participação em cursos, treinamentos, palestras, seminários, etc.", pontuacaoRef: "1 ponto para cada 15 minutos" },
+    { nome: "Gestão de conhecimento", descricao: "Elaboração ou edição de conhecimento registrado nas wikis corporativas.", pontuacaoRef: "Conforme esforço" },
+    { nome: "Detalhamento de requisito/tarefa", descricao: "Levantamento, estudo, entendimento e registro de requisito a ser implementado em sistema.", pontuacaoRef: "Conforme esforço" },
+    { nome: "E-mail", descricao: "Redação e envio de e-mail relacionado às atividades ou responsabilidades da Seção, ou de projetos externos designados.", pontuacaoRef: "Conforme esforço" },
+    { nome: "Registro de melhoria", descricao: "Identificação e registro de melhoria técnica a ser implementada em sistema ou projeto.", pontuacaoRef: "2 pontos" },
+    { nome: "Registro de erro", descricao: "Identificação e registro de erro a ser corrigido em sistema ou projeto.", pontuacaoRef: "1 ponto" },
+    { nome: "Atividade extraordinária", descricao: "Atividade realizada por determinação superior", pontuacaoRef: "1 ponto para cada 15 minutos" }
+  ];
+
+  const ATIVIDADE_PADRAO = {
+    atividade: "Relatório de atividades",
+    evidencia: "Este documento.",
+    justificativa: "Para envio semanal de relatório.",
+    esforco: 3, complexidade: "Baixa", pontos: 12
+  };
+
+  function obterValorOrdenacaoSemana(label) {
+      const matches = label ? label.match(/\d+/g) : [];
+      if (matches && matches.length >= 2) {
+          return parseInt(matches[1], 10) * 100 + parseInt(matches[0], 10);
+      }
+      return matches && matches.length === 1 ? parseInt(matches[0], 10) : 0;
+  }
+
+  function registrarAlteracao() {
+    if (!dadosArquivo) return;
+    dadosArquivo.ultimaAlteracao = new Date().toISOString();
+    if (situacaoAtual !== 'Criando') {
+      situacaoAtual = 'Alterando';
+    }
+    renderUltimaAlteracao();
+  }
+
+  function renderUltimaAlteracao() {
+    const div = document.getElementById('divUltimaAlteracao');
+    if (!dadosArquivo || !dadosArquivo.ultimaAlteracao) {
+      div.style.display = 'none';
+      return;
+    }
+    const d = new Date(dadosArquivo.ultimaAlteracao);
+    const dataStr = d.toLocaleDateString('pt-BR');
+    const horaStr = d.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+    document.getElementById('lblUltimaAlteracao').innerText = `${dataStr} às ${horaStr}`;
+    
+    const lblSit = document.getElementById('lblSituacao');
+    lblSit.innerText = situacaoAtual;
+    lblSit.className = `status-badge ${situacaoAtual.toLowerCase()}`;
+    div.style.display = 'flex';
+  }
+
+  function toggleCollapse(boxId) { const box = document.getElementById(boxId); if(box) box.classList.toggle('active'); }
+  function toggleAtividadeCollapse(boxId) { const box = document.getElementById(boxId); if(box) box.classList.toggle('active'); }
+  function escapeHtml(str) { return (str || '').toString().replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+
+  let savedRange = null;
+  let currentLinkNode = null;
+  let textareaAlvoLink = null;
+
+  function openLinkModalRTE(textareaId) {
+      textareaAlvoLink = textareaId;
+      const editor = document.getElementById(textareaId);
+      editor.focus();
+
+      const sel = window.getSelection();
+      currentLinkNode = null;
+
+      if (sel.rangeCount > 0) {
+          savedRange = sel.getRangeAt(0);
+          let node = sel.anchorNode;
+          while (node && node !== document.body && !node.classList?.contains('rte-editor')) {
+              if (node.nodeName === 'A') {
+                  currentLinkNode = node;
+                  break;
+              }
+              node = node.parentNode;
+          }
+      }
+
+      document.getElementById('lblModalLinkTitulo').innerText = currentLinkNode ? "Editar Link" : "Inserir Link";
+      document.getElementById('txtLinkUrl').value = currentLinkNode ? currentLinkNode.href : '';
+      document.getElementById('txtLinkRotulo').value = currentLinkNode ? currentLinkNode.textContent : sel.toString();
+      showModalFocus('modalLinkUI');
+  }
+
+  function fecharModalLink() {
+      document.getElementById('modalLinkUI').classList.remove('active');
+  }
+
+  document.getElementById('btnConfirmarLink').addEventListener('click', () => {
+      let url = document.getElementById('txtLinkUrl').value.trim();
+      const rotulo = document.getElementById('txtLinkRotulo').value.trim();
+      
+      if (!url) {
+          customAlert("A URL é obrigatória.");
+          return;
+      }
+      if(!url.match(/^https?:\/\//i)) {
+          url = 'https://' + url;
+      }
+
+      const editor = document.getElementById(textareaAlvoLink);
+      editor.focus();
+
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      if (savedRange) sel.addRange(savedRange);
+
+      if (currentLinkNode) {
+          currentLinkNode.href = url;
+          if (rotulo) currentLinkNode.textContent = rotulo;
+      } else {
+          if (rotulo && sel.toString() !== rotulo) {
+              const htmlLink = `<a href="${url}" target="_blank" rel="noopener" style="color: var(--primary); text-decoration: underline;" onclick="event.stopPropagation()">${escapeHtml(rotulo)}</a>`;
+              document.execCommand('insertHTML', false, htmlLink);
+          } else {
+              document.execCommand('createLink', false, url);
+              const aTags = editor.querySelectorAll('a');
+              aTags.forEach(a => {
+                  if (!a.getAttribute('target')) {
+                      a.setAttribute('target', '_blank');
+                      a.setAttribute('rel', 'noopener');
+                      a.style.color = 'var(--primary)';
+                      a.style.textDecoration = 'underline';
+                      a.setAttribute('onclick', 'event.stopPropagation()');
+                  }
+              });
+          }
+      }
+      fecharModalLink();
+  });
+
+  function processHTML(htmlText, isPrint = false) {
+      if (!htmlText) return '';
+      let tempDiv = document.createElement('div');
+      
+      if (!/<[a-z][\s\S]*>/i.test(htmlText)) {
+          tempDiv.innerHTML = escapeHtml(htmlText).replace(/\n/g, '<br>');
+      } else {
+          tempDiv.innerHTML = htmlText;
+      }
+
+      const walk = document.createTreeWalker(tempDiv, NodeFilter.SHOW_TEXT, null, false);
+      const nodesToReplace = [];
+      let n;
+      while(n = walk.nextNode()) {
+          if (n.parentNode && n.parentNode.nodeName !== 'A') {
+              if (/(https?:\/\/[^\s<]+)/i.test(n.nodeValue) || /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/.test(n.nodeValue)) {
+                  nodesToReplace.push(n);
+              }
+          }
+      }
+      
+      nodesToReplace.forEach(node => {
+          let text = escapeHtml(node.nodeValue);
+          if (isPrint) {
+              text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2">$1</a>');
+              text = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1">$1</a>');
+          } else {
+              text = text.replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g, '<a href="$2" target="_blank" rel="noopener" style="color: var(--primary); text-decoration: underline;" onclick="event.stopPropagation()">$1</a>');
+              text = text.replace(/(https?:\/\/[^\s<]+)/g, '<a href="$1" target="_blank" rel="noopener" style="color: var(--primary); text-decoration: underline;" onclick="event.stopPropagation()">$1</a>');
+          }
+          let span = document.createElement('span');
+          span.innerHTML = text;
+          node.parentNode.replaceChild(span, node);
+      });
+
+      tempDiv.querySelectorAll('a').forEach(a => {
+          let href = a.getAttribute('href');
+          if (href && !href.match(/^https?:\/\//i)) {
+              a.setAttribute('href', 'https://' + href);
+          }
+          
+          if (isPrint) {
+              a.removeAttribute('onclick');
+              a.removeAttribute('style');
+              a.removeAttribute('target');
+              a.removeAttribute('rel');
+              
+              let currentHref = a.getAttribute('href');
+              let textContent = a.textContent.trim();
+              if (currentHref && !textContent.includes(currentHref) && !currentHref.includes(textContent)) {
+                  let urlSpan = document.createElement('span');
+                  urlSpan.innerHTML = ` <span style="font-size: 0.85em; color: #555;">(${currentHref})</span>`;
+                  a.parentNode.insertBefore(urlSpan, a.nextSibling);
+              }
+          } else {
+              if (!a.getAttribute('target')) a.setAttribute('target', '_blank');
+              if (!a.getAttribute('rel')) a.setAttribute('rel', 'noopener');
+              a.setAttribute('onclick', 'event.stopPropagation()');
+              a.style.color = 'var(--primary)';
+              a.style.textDecoration = 'underline';
+          }
+      });
+
+      return tempDiv.innerHTML;
+  }
+
+  function migrateToHTML(text) { return processHTML(text, false); }
+  function formatForPrint(text) { return processHTML(text, true); }
+
+  function customAlert(msg) {
+    document.getElementById('msgCustomAlert').innerText = msg;
+    showModalFocus('modalCustomAlert');
+  }
+  document.getElementById('btnCustomAlertOk').addEventListener('click', () => {
+    document.getElementById('modalCustomAlert').classList.remove('active');
+  });
+
+  let confirmCallback = null;
+  function customConfirm(msg, callback) {
+    document.getElementById('msgCustomConfirm').innerText = msg;
+    confirmCallback = callback;
+    showModalFocus('modalCustomConfirm');
+  }
+  document.getElementById('btnCustomConfirmCancel').addEventListener('click', () => {
+    document.getElementById('modalCustomConfirm').classList.remove('active');
+    confirmCallback = null;
+  });
+  document.getElementById('btnCustomConfirmOk').addEventListener('click', () => {
+    document.getElementById('modalCustomConfirm').classList.remove('active');
+    if (confirmCallback) confirmCallback();
+    confirmCallback = null;
+  });
+
+  function parseDataBRGlob(dataStr) {
+    if (!dataStr) return null;
+    const partes = dataStr.split('/');
+    if (partes.length !== 3) return null;
+    const dia = parseInt(partes[0], 10);
+    const mes = parseInt(partes[1], 10) - 1;
+    const ano = parseInt(partes[2], 10);
+    return new Date(Date.UTC(ano, mes, dia));
+  }
+
+  function formatDataBRGlob(date) {
+    const d = String(date.getUTCDate()).padStart(2, '0');
+    const m = String(date.getUTCMonth() + 1).padStart(2, '0');
+    const a = date.getUTCFullYear();
+    return `${d}/${m}/${a}`;
+  }
+
+  function quebrarPeriodoPorMes(dataInicioStr, dataFimStr) {
+    let inicio = parseDataBRGlob(dataInicioStr);
+    const fim = parseDataBRGlob(dataFimStr);
+    const periodos = [];
+
+    if (!inicio || !fim || inicio > fim) return periodos;
+
+    while (inicio <= fim) {
+      const anoAtual = inicio.getUTCFullYear();
+      const mesAtual = inicio.getUTCMonth();
+      const ultimoDiaDoMes = new Date(Date.UTC(anoAtual, mesAtual + 1, 0));
+      let fimDoPedaco = (fim <= ultimoDiaDoMes) ? fim : ultimoDiaDoMes;
+
+      periodos.push({
+        inicio: formatDataBRGlob(inicio),
+        fim: formatDataBRGlob(fimDoPedaco),
+        mes: mesAtual + 1,
+        ano: anoAtual
+      });
+
+      inicio = new Date(Date.UTC(anoAtual, mesAtual + 1, 1));
+    }
+    return periodos;
+  }
+
+  function omitirAnoNaExibicao(dataStr) {
+    if (!dataStr) return '';
+    return dataStr.replace(/\/\d{4}/g, '');
+  }
+
+  function agruparFeriadosSemanas(listaItens) {
+    if (!listaItens || !Array.isArray(listaItens)) return [];
+    
+    let itensNormalizados = listaItens.map(item => {
+      let dIni = parseDataBRGlob(item.data);
+      let dFim = parseDataBRGlob(item.dataFim || item.data);
+      return { ...item, dInicio: dIni, dFim: dFim };
+    }).filter(i => i.dInicio && i.dFim).sort((a, b) => a.dInicio - b.dInicio);
+
+    let agrupados = [];
+    itensNormalizados.forEach(item => {
+      if (agrupados.length === 0) {
+        agrupados.push({ ...item });
+      } else {
+        let ultimo = agrupados[agrupados.length - 1];
+        let descA = (ultimo.descricao || '').trim().toLowerCase();
+        let descB = (item.descricao || '').trim().toLowerCase();
+        let contiguo = (item.dInicio.getTime() - ultimo.dFim.getTime()) <= (24 * 60 * 60 * 1000);
+        
+        if (descA && descA === descB && contiguo && ultimo.fator === item.fator && ultimo.fixo === item.fixo) {
+          if (item.dFim > ultimo.dFim) {
+            ultimo.dFim = item.dFim;
+            ultimo.dataFim = formatDataBRGlob(item.dFim);
+          }
+        } else {
+          agrupados.push({ ...item });
+        }
+      }
+    });
+    return agrupados;
+  }
+
+  function obterCssClassCategoria(desc) {
+    const dLower = (desc || '').toLowerCase();
+    if (dLower.includes('férias') || dLower.includes('ferias')) return 'chip-ferias';
+    if (dLower.includes('recesso')) return 'chip-recesso';
+    if (dLower.includes('reduzido') || dLower.includes('expediente reduzido')) return 'chip-reduzido';
+    if (dLower.includes('banco de horas')) return 'chip-banco';
+    if (dLower.includes('presencial')) return 'chip-presencial';
+    if (dLower.includes('facultativo')) return 'chip-ponto-facultativo';
+    return 'chip-feriado';
+  }
+
+  function obterEstruturasFeriadoQuebrado(item, limiteInicioStr = null, limiteFimStr = null) {
+    if (!item) return [];
+    let dInicio = parseDataBRGlob(item.data);
+    let dFim = parseDataBRGlob(item.dataFim || item.data);
+
+    if (!dInicio || !dFim) return [];
+
+    if (limiteInicioStr && limiteFimStr) {
+      const lInicio = parseDataBRGlob(limiteInicioStr);
+      const lFim = parseDataBRGlob(limiteFimStr);
+      if (lInicio && lFim) {
+        if (dInicio < lInicio) dInicio = lInicio;
+        if (dFim > lFim) dFim = lFim;
+        if (dInicio > dFim) return []; 
+      }
+    }
+
+    let dataInicioStr = formatDataBRGlob(dInicio);
+    let dataFimStr = formatDataBRGlob(dFim);
+    let pedacos = quebrarPeriodoPorMes(dataInicioStr, dataFimStr);
+
+    return pedacos.map(pedaco => {
+      let dataStrVisual = omitirAnoNaExibicao(pedaco.inicio);
+      let fimVisual = omitirAnoNaExibicao(pedaco.fim);
+
+      if (dataStrVisual !== fimVisual && fimVisual) {
+        dataStrVisual = `${dataStrVisual} a ${fimVisual}`;
+      }
+      
+      let desc = item.descricao || '';
+      let horasReducao = null;
+      if (item.fator !== undefined && item.fator < 1.0) {
+        horasReducao = Math.round((item.fator * 7) * 10) / 10;
+      }
+
+      return {
+        dataFormatted: dataStrVisual,
+        descricao: desc,
+        horasReducao: horasReducao,
+        fixo: item.fixo === true,
+        categoriaClass: obterCssClassCategoria(desc)
+      };
+    });
+  }
+
+  function mostrarView(viewId) {
+    document.getElementById('viewInicial').style.display = 'none';
+    document.getElementById('viewLista').style.display = 'none';
+    document.getElementById('viewDetalhes').style.display = 'none';
+    document.getElementById('viewDashboard').style.display = 'none';
+    if (viewId) document.getElementById(viewId).style.display = 'block';
+    
+    const btnDashboard = document.getElementById('btnDashboard');
+    if (dadosArquivo !== null && viewId !== 'viewInicial') {
+      btnDashboard.style.display = 'inline-flex';
+    } else {
+      btnDashboard.style.display = 'none';
+    }
+    
+    if (dadosArquivo !== null) document.getElementById('btnSalvar').style.display = 'inline-block';
+  }
+
+  function renderCabecalhoGlobal() {
+    if (!dadosArquivo) return;
+    document.getElementById('lblGlobalServidor').innerText = dadosArquivo.servidor || 'Não informado';
+    document.getElementById('lblGlobalResponsavel').innerText = dadosArquivo.responsavel || 'Não informado';
+    document.getElementById('lblGlobalUnidade').innerText = dadosArquivo.unidade || 'Não informada';
+  }
+
+  function abrirModalEdicaoGlobal() {
+    let servidorAtual = dadosArquivo?.servidor || '';
+    let responsavelAtual = dadosArquivo?.responsavel || '';
+    let unidadeAtual = dadosArquivo?.unidade || '';
+
+    if (!servidorAtual && dadosArquivo?.semanas && dadosArquivo.semanas.length > 0) {
+      let sw = dadosArquivo.semanas[0];
+      servidorAtual = sw.cabecalho?.servidor || sw.servidor || '';
+      responsavelAtual = sw.cabecalho?.responsavel || sw.responsavel || '';
+      unidadeAtual = sw.cabecalho?.unidade || sw.unidade || '';
+    }
+
+    document.getElementById('globalServidor').value = servidorAtual || CONFIG_PADRAO.servidor;
+    document.getElementById('globalResponsavel').value = responsavelAtual || CONFIG_PADRAO.responsavel;
+    document.getElementById('globalUnidade').value = unidadeAtual || CONFIG_PADRAO.unidade;
+    
+    showModalFocus('modalNovoRelatorio');
+  }
+
+  document.getElementById('btnCancelarModalNovoRelatorio').addEventListener('click', () => {
+    document.getElementById('modalNovoRelatorio').classList.remove('active');
+    if (abrindoPelaPrimeiraVez && (!dadosArquivo || !dadosArquivo.servidor)) {
+      dadosArquivo = null;
+      document.getElementById('btnSalvar').style.display = 'none';
+      mostrarView('viewInicial');
+    }
+    abrindoPelaPrimeiraVez = false;
+  });
+
+  document.getElementById('btnConfirmarModalNovoRelatorio').addEventListener('click', () => {
+    if (!dadosArquivo) {
+      dadosArquivo = { ano: ANO_CORRENTE, semanas: [], feriadosGlobais: gerarFeriadosNacionais(ANO_CORRENTE) };
+    }
+    dadosArquivo.servidor = document.getElementById('globalServidor').value;
+    dadosArquivo.responsavel = document.getElementById('globalResponsavel').value;
+    dadosArquivo.unidade = document.getElementById('globalUnidade').value;
+    
+    registrarAlteracao(); 
+    document.getElementById('modalNovoRelatorio').classList.remove('active');
+    
+    renderCabecalhoGlobal();
+    renderListaSemanas();
+    renderFeriadosGlobais();
+    mostrarView('viewLista');
+
+    if (abrindoPelaPrimeiraVez && dadosArquivo.semanas.length === 0) {
+      gerarOpcoesTodasSemanasAno(dadosArquivo.ano);
+      showModalFocus('modalNovaSemana');
+    }
+    abrindoPelaPrimeiraVez = false;
+  });
+
+  function clicarFeriadoGlobal(indexOriginal, isFixo) {
+    if (isFixo) {
+      customAlert("Feriados nacionais, recesos e expediente reduzido fixos são automáticos e não podem ser alterados ou removidos.");
+    } else {
+      abrirModalFeriado(indexOriginal);
+    }
+  }
+
+  function renderFeriadosGlobais() {
+    const container = document.getElementById('containerFeriadosGlobais');
+    container.innerHTML = '';
+    
+    if (!dadosArquivo || !dadosArquivo.feriadosGlobais || dadosArquivo.feriadosGlobais.length === 0) {
+      container.innerHTML = '<span style="font-size: 0.85rem; color: var(--subtext); font-style: italic;">Nenhum registro encontrado.</span>';
+      return;
+    }
+
+    let itensOrdenados = [...dadosArquivo.feriadosGlobais].map((item, idx) => {
+      let dIni = parseDataBRGlob(item.data);
+      return { item, idx, dIni: dIni ? dIni.getTime() : 0 };
+    }).sort((a, b) => a.dIni - b.dIni);
+
+    itensOrdenados.forEach(obj => {
+      const item = obj.item;
+      const indexOriginal = obj.idx;
+
+      const chip = document.createElement('div');
+      let dIniStr = omitirAnoNaExibicao(item.data || '');
+      let dFimStr = omitirAnoNaExibicao(item.dataFim || item.data || '');
+      let dataVisual = (dIniStr !== dFimStr && dFimStr) ? `${dIniStr} a ${dFimStr}` : dIniStr;
+
+      let desc = item.descricao || '';
+      let horasReducao = null;
+      if (item.fator !== undefined && item.fator < 1.0) {
+        horasReducao = Math.round((item.fator * 7) * 10) / 10;
+      }
+
+      let categoriaClass = obterCssClassCategoria(desc);
+
+      chip.className = `feriado-chip clickable ${categoriaClass}`;
+      chip.onclick = () => clicarFeriadoGlobal(indexOriginal, item.fixo);
+      
+      let botoes = '';
+      if (!item.fixo) {
+        botoes = `<button class="btn-remove-feriado" title="Remover" onclick="event.stopPropagation(); excluirFeriadoGlobal(${indexOriginal})">&times;</button>`;
+      }
+
+      chip.innerHTML = `
+        <span class="chip-date">${escapeHtml(dataVisual)}</span>
+        ${desc ? `<span>- ${escapeHtml(desc)}</span>` : ''}
+        ${horasReducao ? `<span class="chip-badge-hours"> Redução ${horasReducao}h</span>` : ''}
+        ${botoes}
+      `;
+      container.appendChild(chip);
+    });
+  }
+
+  function excluirFeriadoGlobal(index) {
+    if (!dadosArquivo || !dadosArquivo.feriadosGlobais[index]) return;
+    if (dadosArquivo.feriadosGlobais[index].fixo) {
+      customAlert("Feriados nacionais e calculados não podem ser removidos.");
+      return;
+    }
+    customConfirm('Tem certeza que deseja excluir este item da base anual?', () => {
+      dadosArquivo.feriadosGlobais.splice(index, 1);
+      registrarAlteracao();
+      sincronizarTodosFeriadosSemanas();
+      renderFeriadosGlobais();
+    });
+  }
+
+  function formatarNumeroLista(str) {
+    const num = str.match(/\d+/);
+    if(num) return num[0].padStart(2, '0') + "º Semana";
+    return str;
+  }
+
+  function mostrarInfoSemana(index) {
+    const sem = dadosArquivo.semanas[index];
+    if (!sem) return;
+
+    const nomeCurtoSemana = formatarNumeroLista(sem.semanaAno);
+    document.getElementById('lblInfoSemanaTitulo').innerText = `Período da ${nomeCurtoSemana}`;
+
+    let periodoStr = sem.cabecalho?.periodo || '';
+    let dtInicio = 'N/A', dtFim = 'N/A';
+
+    if (periodoStr.includes(' a ')) {
+      const partes = periodoStr.split(' a ');
+      dtInicio = partes[0].trim();
+      dtFim = partes[1].trim();
+    } else if (periodoStr) {
+      dtInicio = periodoStr;
+      dtFim = periodoStr;
+    }
+
+    document.getElementById('lblInfoSemanaInicio').innerText = dtInicio;
+    document.getElementById('lblInfoSemanaFim').innerText = dtFim;
+    showModalFocus('modalInfoSemana');
+  }
+
+  function fecharModalInfoSemana() {
+    document.getElementById('modalInfoSemana').classList.remove('active');
+  }
+
+  function mostrarInfoKpi(titulo, descricao) {
+    document.getElementById('lblInfoKpiTitulo').innerText = titulo;
+    document.getElementById('lblInfoKpiDescricao').innerText = descricao;
+    showModalFocus('modalInfoKpi');
+  }
+  
+  function renderListaSemanas() {
+    const container = document.getElementById('containerListaSemanas');
+    container.innerHTML = '';
+    if (!dadosArquivo) return;
+
+    sincronizarTodosFeriadosSemanas();
+    dadosArquivo.semanas.sort((a, b) => obterValorOrdenacaoSemana(b.semanaAno) - obterValorOrdenacaoSemana(a.semanaAno));
+    document.getElementById('lblAnoLista').innerText = `Semanas do Ano ${dadosArquivo.ano}`;
+
+    const filtro = document.getElementById('filtroMeta') ? document.getElementById('filtroMeta').value : 'todos';
+    const semanasComIndex = dadosArquivo.semanas.map((sem, originalIndex) => ({ sem, originalIndex }));
+    const semanasFiltradas = semanasComIndex.filter(obj => {
+      const meta = obj.sem.cabecalho?.meta ?? 121;
+      const pts = obj.sem.cabecalho?.pontuacaoTotal ?? 0;
+      if (filtro === 'zerada') return meta === 0;
+      if (filtro === 'preenchida') return meta > 0;
+      if (filtro === 'atingida') return meta > 0 && pts >= meta;
+      if (filtro === 'atingir') return meta > 0 && pts < meta;
+      return true;
+    });
+
+    if(semanasFiltradas.length === 0) {
+      container.innerHTML = '<div style="text-align: center; color: var(--subtext); padding: 20px;">Nenhuma semana encontrada.</div>';
+      return;
+    }
+
+    semanasFiltradas.forEach((obj) => {
+      const sem = obj.sem;
+      const index = obj.originalIndex;
+      
+      const meta = sem.cabecalho?.meta ?? 121;
+      const pts = sem.cabecalho?.pontuacaoTotal ?? 0;
+      
+      const badgeClass = pts >= meta ? 'badge-goal-met' : 'badge-goal-pending';
+      const metaStr = meta.toString().replace('.', ',');
+      const ptsStr = pts.toString().replace('.', ',');
+      const scoreHtml = `<span class="${badgeClass} badge-score-mono">M: ${metaStr}\nP: ${ptsStr}</span>`;
+	        
+      let feriadosHtml = '';
+      if(sem.cabecalho && sem.cabecalho.feriados && sem.cabecalho.feriados.length > 0) {
+         let listaFeriados = sem.cabecalho.feriados;
+         
+         if (typeof listaFeriados === 'string') {
+             listaFeriados = listaFeriados.split(';').filter(x => x && x.trim() !== 'Nenhum').map(x => ({descricao: x, fator: 1.0}));
+         }
+         
+         if (Array.isArray(listaFeriados)) {
+           let lInicio = null, lFim = null;
+           if (sem.cabecalho.periodo && sem.cabecalho.periodo.includes(' a ')) {
+               [lInicio, lFim] = sem.cabecalho.periodo.split(' a ').map(s => s.trim());
+           }
+
+           let agrupadosSemana = agruparFeriadosSemanas(listaFeriados);
+
+           agrupadosSemana.forEach(f => {
+             const estruturas = obterEstruturasFeriadoQuebrado(f, lInicio, lFim);
+             estruturas.forEach(est => {
+               const texto = `${est.dataFormatted}${est.descricao ? ' - ' + est.descricao : ''}${est.horasReducao ? ' (Redução ' + est.horasReducao + 'h)' : ''}`;
+               feriadosHtml += `<span class="badge-holiday ${est.categoriaClass}">${escapeHtml(texto)}</span>`;
+             });
+           });
+         }
+      }
+
+      const nomeCurtoSemana = formatarNumeroLista(sem.semanaAno);
+      const div = document.createElement('div');
+      div.className = 'semana-list-item';
+      div.innerHTML = `
+        <div style="flex: 1; display: flex; align-items: center; flex-wrap: wrap; gap: 10px;" onclick="abrirSemana(${index})">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <button class="btn-info-square" title="Ver período desta semana" onclick="event.stopPropagation(); mostrarInfoSemana(${index})">i</button>
+            <strong style="white-space: nowrap;">${escapeHtml(nomeCurtoSemana)}</strong>
+          </div>
+          ${scoreHtml}
+          <div style="display: flex; flex-wrap: wrap; gap: 6px;">${feriadosHtml}</div>
+        </div>
+        <button class="btn-danger-outline" style="padding: 6px 12px; font-size: 0.8rem; border-radius: 4px; margin-left: 10px;" onclick="event.stopPropagation(); excluirSemana(${index})">Excluir</button>
+      `;
+      container.appendChild(div);
+    });
+  }
+
+  function excluirSemana(index) {
+    customConfirm('Deseja excluir esta semana?', () => {
+      dadosArquivo.semanas.splice(index, 1);
+      registrarAlteracao();
+      renderListaSemanas();
+    });
+  }
+
+  function abrirSemana(index) {
+    indexSemanaAtiva = index;
+    dados = dadosArquivo.semanas[index]; 
+    render(); 
+    sincronizarFeriadosDaSemanaAtual();
+    mostrarView('viewDetalhes');
+  }
+
+  document.getElementById('btnVoltarLista').addEventListener('click', () => {
+    if(dados) {
+      recalcularTudo();
+    }
+    indexSemanaAtiva = -1;
+    dados = null;
+    renderListaSemanas();
+    mostrarView('viewLista');
+  });
+
+  // -------------- FUNÇÕES DO DASHBOARD --------------
+  function abrirDashboard() {
+    renderDashboard();
+    mostrarView('viewDashboard');
+  }
+
+  /* =================================================================================
+   * NOTA EXPLICATIVA: TRATAMENTO DE PARALIZAÇÕES PARCIAIS (EXPEDIENTE REDUZIDO)
+   * ---------------------------------------------------------------------------------
+   * Paralizações parciais (ex: expediente reduzido com abatimento em horas) NÃO 
+   * contam como "dias paralisados" na jornada nem invalidam a jornada de teletrabalho. 
+   * O servidor prossegue em regime de teletrabalho no período restante do expediente. 
+   * Portanto, apenas ausências/paralizações integrais (fator === 1.0 ou 100%) 
+   * qualificam um dia como totalmente paralisado.
+   * =================================================================================
+   */
+  function renderDashboard() {
+    if (!dadosArquivo || !dadosArquivo.semanas) return;
+
+    let totalWeeks = 0;
+    let hitCount = 0;
+    let totalPts = 0;
+    let totalMeta = 0;
+    let totalHoras = 0;
+    
+    let compCount = { 'Baixa': 0, 'Média': 0, 'Alta': 0 };
+    let taskStats = {}; 
+    let taskHours = {};
+
+    let totalDiasTeletrabalho = 0;
+    let totalDiasParalizacao = 0;
+    let totalDiasPresencial = 0;
+
+    const semanasChartLabels = [];
+    const semanasChartPts = [];
+    const semanasChartMeta = [];
+
+    let semanasOrdenadas = [...dadosArquivo.semanas].sort((a, b) => obterValorOrdenacaoSemana(a.semanaAno) - obterValorOrdenacaoSemana(b.semanaAno));
+    
+    semanasOrdenadas.forEach(sem => {
+      const meta = sem.cabecalho?.meta ?? 0;
+      const pts = sem.cabecalho?.pontuacaoTotal ?? 0;
+
+      if (meta > 0) {
+        totalWeeks++;
+        totalPts += pts;
+        totalMeta += meta;
+        if (pts >= meta) hitCount++;
+      }
+
+      const numSem = formatarNumeroLista(sem.semanaAno).split('º')[0] + 'ª';
+      semanasChartLabels.push(numSem);
+      semanasChartPts.push(pts);
+      semanasChartMeta.push(meta);
+
+      const periodoStr = sem.cabecalho?.periodo || '';
+      if (periodoStr.includes(' a ')) {
+        const [inicioBR, fimBR] = periodoStr.split(' a ').map(s => s.trim());
+        const dtInicioStr = converterBRParaInput(inicioBR);
+        const dtFimStr = converterBRParaInput(fimBR);
+
+        if (dtInicioStr && dtFimStr) {
+          const dInicio = new Date(dtInicioStr + 'T00:00:00Z');
+          const dFim = new Date(dtFimStr + 'T00:00:00Z');
+
+          let diasParalizacaoSemana = 0;
+          let diasPresencialSemana = 0;
+
+          const descontosTotaisPorDia = new Map();
+          const diasPresenciaisSet = new Set();
+
+          (sem.cabecalho?.feriados || []).forEach(f => {
+            if (f && f.data) {
+              const pInicio = f.data.split('/');
+              const pFim = (f.dataFim || f.data).split('/');
+              if (pInicio.length === 3 && pFim.length === 3) {
+                const dFIni = new Date(Date.UTC(parseInt(pInicio[2], 10), parseInt(pInicio[1], 10) - 1, parseInt(pInicio[0], 10)));
+                const dFFim = new Date(Date.UTC(parseInt(pFim[2], 10), parseInt(pFim[1], 10) - 1, parseInt(pFim[0], 10)));
+                const descLower = (f.descricao || '').toLowerCase();
+
+                let curr = new Date(dFIni);
+                while (curr <= dFFim) {
+                  if (curr >= dInicio && curr <= dFim) {
+                    const diaSemana = curr.getUTCDay();
+                    // Ignora fins de semana
+                    if (diaSemana !== 0 && diaSemana !== 6) {
+                      const k = curr.getTime();
+                      if (descLower.includes('presencial')) {
+                        diasPresenciaisSet.add(k);
+                      } else {
+                        const fator = f.fator !== undefined ? Number(f.fator) : 1.0;
+                        // Apenas paralizações integrais (fator === 1.0) contam como dia totalmente paralisado.
+                        if (fator >= 1.0) {
+                          descontosTotaisPorDia.set(k, 1.0);
+                        }
+                      }
+                    }
+                  }
+                  curr.setUTCDate(curr.getUTCDate() + 1);
+                }
+              }
+            }
+          });
+
+          diasParalizacaoSemana = descontosTotaisPorDia.size;
+          diasPresencialSemana = diasPresenciaisSet.size;
+
+          const totalDiasUteisSemana = 5;
+          const diasTeletrabalhoSemana = Math.max(0, totalDiasUteisSemana - diasParalizacaoSemana - diasPresencialSemana);
+
+          totalDiasParalizacao += diasParalizacaoSemana;
+          totalDiasPresencial += diasPresencialSemana;
+          totalDiasTeletrabalho += diasTeletrabalhoSemana;
+        }
+      }
+
+      if (sem.atividades && Array.isArray(sem.atividades)) {
+        sem.atividades.forEach(ativ => {
+          const comp = ativ.complexidade || 'Baixa';
+          compCount[comp] = (compCount[comp] || 0) + 1;
+          
+          const horas = Number(ativ.esforco) || 0;
+          totalHoras += horas;
+
+          const nome = ativ.atividade;
+          if (nome !== "Relatório de atividades") {
+            if (!taskStats[nome]) {
+               taskStats[nome] = 0; taskHours[nome] = 0;
+            }
+            taskStats[nome]++;
+            taskHours[nome] += horas;
+          }
+        });
+      }
+    });
+
+    const hitRate = totalWeeks > 0 ? ((hitCount / totalWeeks) * 100).toFixed(1) : 0;
+    const saldo = totalPts - totalMeta;
+
+    document.getElementById('kpiSemanas').innerText = totalWeeks;
+    document.getElementById('kpiHitRate').innerText = hitRate.toString().replace('.', ',') + '%';
+    
+    const saldoEl = document.getElementById('kpiSaldo');
+    saldoEl.innerText = saldo > 0 ? '+' + saldo.toFixed(1).replace('.', ',') : saldo.toFixed(1).replace('.', ',');
+    
+    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+    if (isDark) {
+      saldoEl.style.color = saldo >= 0 ? '#86efac' : '#f87171';
+    } else {
+      saldoEl.style.color = saldo >= 0 ? '#166534' : 'var(--danger)';
+    }
+
+    document.getElementById('kpiHoras').innerText = totalHoras.toFixed(1).replace('.', ',') + 'h';
+
+    Chart.defaults.color = isDark ? '#94a3b8' : '#4b5563';
+    Chart.defaults.borderColor = isDark ? '#2e3b55' : '#e2e8f0';
+
+    if (chartInstances.evolucao) chartInstances.evolucao.destroy();
+    chartInstances.evolucao = new Chart(document.getElementById('chartEvolucao'), {
+      type: 'bar',
+      data: {
+        labels: semanasChartLabels,
+        datasets: [
+          { 
+            type: 'bar',
+            label: 'Pontuação', 
+            data: semanasChartPts, 
+            backgroundColor: isDark ? 'rgba(59, 130, 246, 0.8)' : 'rgba(37, 99, 235, 0.8)',
+            borderRadius: 4,
+            order: 2
+          },
+          { 
+            type: 'line', 
+            label: 'Meta', 
+            data: semanasChartMeta, 
+            borderColor: '#ef4444', 
+            borderWidth: 3, 
+            backgroundColor: 'transparent', 
+            pointRadius: 3,
+            tension: 0.1,
+            order: 1
+          }
+        ]
+      },
+      options: { responsive: true, maintainAspectRatio: false }
+    });
+
+    if (chartInstances.dias) chartInstances.dias.destroy();
+    chartInstances.dias = new Chart(document.getElementById('chartDias'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Teletrabalho', 'Paralizações', 'Presencial'],
+        datasets: [{
+          data: [totalDiasTeletrabalho, totalDiasParalizacao, totalDiasPresencial],
+          backgroundColor: ['#3b82f6', '#ef4444', '#eab308'],
+          borderWidth: 0
+        }]
+      },
+      options: { 
+        responsive: true, 
+        maintainAspectRatio: false, 
+        cutout: '70%', 
+        plugins: { 
+          legend: { position: 'bottom' } 
+        } 
+      }
+    });
+
+    const formatLabel = (str) => str;
+
+    const sortedStats = Object.entries(taskStats).sort((a, b) => b[1] - a[1]).slice(0, 5);
+    const freqLabels = sortedStats.map(t => formatLabel(t[0]));
+    const freqData = sortedStats.map(t => t[1]);
+
+    if (chartInstances.ranking) chartInstances.ranking.destroy();
+    chartInstances.ranking = new Chart(document.getElementById('chartRanking'), {
+      type: 'bar',
+      data: {
+        labels: freqLabels,
+        datasets: [{ label: 'Qtd de Ocorrências', data: freqData, backgroundColor: isDark ? '#3b82f6' : '#2563eb', borderRadius: 4 }]
+      },
+      options: { indexAxis: 'y', responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+    });
+
+    let sortedHours = Object.entries(taskHours).sort((a, b) => b[1] - a[1]);
+    let topHours = sortedHours.slice(0, 5);
+    let restHours = sortedHours.slice(5).reduce((acc, curr) => acc + curr[1], 0);
+    
+    let timeLabels = topHours.map(t => formatLabel(t[0]));
+    let timeData = topHours.map(t => t[1]);
+    if (restHours > 0) { timeLabels.push('Outros'); timeData.push(restHours); }
+
+    if (chartInstances.tempo) chartInstances.tempo.destroy();
+    chartInstances.tempo = new Chart(document.getElementById('chartTempo'), {
+      type: 'doughnut',
+      data: {
+        labels: timeLabels,
+        datasets: [{ 
+          data: timeData, 
+          backgroundColor: ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444', '#64748b'], 
+          borderWidth: 0 
+        }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '65%', plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } } }
+    });
+
+    if (chartInstances.complex) chartInstances.complex.destroy();
+    chartInstances.complex = new Chart(document.getElementById('chartComplexidade'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Baixa', 'Média', 'Alta'],
+        datasets: [{ data: [compCount['Baixa'], compCount['Média'], compCount['Alta']], backgroundColor: ['#22c55e', '#f59e0b', '#ef4444'], borderWidth: 0 }]
+      },
+      options: { responsive: true, maintainAspectRatio: false, cutout: '70%', plugins: { legend: { position: 'bottom' } } }
+    });
+  }
+
+  function gerarHtmlImpressaoSemana(sem) {
+    let numSemana = sem.semanaAno || 'Semana';
+    let periodo = sem.cabecalho?.periodo || 'Não definido';
+    let servidor = dadosArquivo.servidor || 'Não informado';
+    let unidade = dadosArquivo.unidade || 'Não informada';
+    let responsavel = dadosArquivo.responsavel || 'Não informado';
+    let pontTotal = sem.cabecalho?.pontuacaoTotal || 0;
+
+    let dtInicioStr = '', dtFimStr = '';
+    if (periodo.includes(' a ')) {
+      const partes = periodo.split(' a ').map(s => s.trim());
+      dtInicioStr = partes[0];
+      dtFimStr = partes[1];
+    }
+
+    let feriadosHtml = '';
+    let listaFeriados = sem.cabecalho?.feriados || [];
+    let agrupadosSemana = agruparFeriadosSemanas(listaFeriados);
+
+    agrupadosSemana.forEach((item) => {
+       const estruturas = obterEstruturasFeriadoQuebrado(item, dtInicioStr, dtFimStr);
+       estruturas.forEach(est => {
+         const texto = `${est.dataFormatted} - ${est.descricao ? est.descricao : ''}${est.horasReducao ? ' (Redução ' + est.horasReducao + 'h)' : ''}`;
+         feriadosHtml += `<div class="print-feriados">${escapeHtml(texto)}</div>`;
+       });
+    });
+
+    let ativHtml = '';
+    sem.atividades.forEach(item => {
+       let esforcoPts = (Number(item.esforco) || 0) * 4;
+       const pool = ["Reunião", "Capacitação", "Atividade extraordinária"].includes(item.atividade) ? OPCOES_ESFORCO_GRANULAR : OPCOES_ESFORCO;
+       const enc = pool.find(o => o.valor === Number(item.esforco));
+       if(enc) esforcoPts = enc.basePts;
+
+       let pontosString = item.pontos.toString().replace('.', ',');
+
+       ativHtml += `
+         <table class="print-activity-table" style="table-layout: fixed; width: 100%;">
+           <colgroup>
+             <col style="width: 140px;"><col style="width: 80px;"><col style="width: 60px;">
+             <col style="width: 130px;"><col style="width: 80px;"><col style="width: 70px;"><col style="width: auto;">
+           </colgroup>
+           <tr><td class="label-col">Atividade</td><td colspan="6">${escapeHtml(item.atividade)}</td></tr>
+           <tr><td class="label-col">Evidência</td><td colspan="6">${formatForPrint(item.evidencia)}</td></tr>
+           <tr><td class="label-col">Justificativa</td><td colspan="6">${formatForPrint(item.justificativa)}</td></tr>
+           <tr>
+             <td class="label-col">Pontuação</td>
+             <td class="sub-label">Esforço:</td><td class="sub-val">${esforcoPts}</td>
+             <td class="sub-label">Complexidade:</td><td class="sub-val">${item.complexidade || 'Baixa'}</td>
+             <td class="sub-label">Pontos:</td><td class="sub-val">${pontosString}</td>
+           </tr>
+         </table>
+       `;
+    });
+
+    return `
+      <div class="print-main-title">${escapeHtml(numSemana)}</div>
+      <div class="print-header-box">
+        <table class="print-header-table">
+          <tr><td class="label-col">Servidor:</td><td class="val-col">${escapeHtml(servidor)}</td></tr>
+          <tr><td class="label-col">Unidade:</td><td class="val-col">${escapeHtml(unidade)}</td></tr>
+          <tr><td class="label-col">Responsável:</td><td class="val-col">${escapeHtml(responsavel)}</td></tr>
+          <tr>
+            <td class="label-col">Período:</td>
+            <td class="val-col">${escapeHtml(periodo)}${feriadosHtml ? `<br>${feriadosHtml}` : ''}</td>
+          </tr>
+          <tr>
+            <td class="label-col" style="padding-top:8px; font-size:10pt;">Pontuação Total:</td>
+            <td class="val-col" style="padding-top:8px; font-weight:bold; font-size:10pt;">${pontTotal.toString().replace('.',',')}</td>
+          </tr>
+        </table>
+      </div>
+      ${ativHtml}
+    `;
+  }
+
+  function gerarHtmlImpressaoResumo(semanasFiltradas) {
+    let servidor = dadosArquivo.servidor || 'Não informado';
+    let unidade = dadosArquivo.unidade || 'Não informada';
+    let responsavel = dadosArquivo.responsavel || 'Não informado';
+    
+    let trs = '';
+    semanasFiltradas.forEach(obj => {
+        let sem = obj.sem;
+        let numSemana = (sem.semanaAno.match(/\d+/) || [''])[0];
+        let ano = dadosArquivo.ano;
+        
+        let periodoStr = sem.cabecalho?.periodo || '';
+        let pIni = '', pFim = '';
+        let lInicio = null, lFim = null;
+        if (periodoStr.includes(' a ')) {
+            let p = periodoStr.split(' a ');
+            pIni = p[0].trim(); pFim = p[1].trim();
+            lInicio = pIni; lFim = pFim;
+        } else {
+            pIni = periodoStr.trim();
+        }
+        let periodoHtml = pFim ? `${pIni.substring(0, 5)}<br>${pFim.substring(0, 5)}` : pIni.substring(0, 5);
+        
+        let pts = sem.cabecalho?.pontuacaoTotal || 0;
+        let meta = sem.cabecalho?.meta || 0;
+        let ptsStr = pts.toString().replace('.', ',');
+        let metaStr = meta.toString().replace('.', ',');
+        
+        let estruturasSemana = [];
+        let agrupadosSemana = agruparFeriadosSemanas(sem.cabecalho?.feriados || []);
+
+        agrupadosSemana.forEach(f => {
+            let estruturas = obterEstruturasFeriadoQuebrado(f, lInicio, lFim);
+            estruturas.forEach(est => {
+                let cat = est.descricao || 'Feriado';
+                let descLower = (est.descricao || '').toLowerCase();
+                
+                if (descLower.includes('férias') || descLower.includes('ferias')) cat = 'Férias';
+                else if (descLower.includes('banco de horas')) cat = 'BH';
+                else if (descLower.includes('presencial')) cat = 'Presencial';
+                else if (descLower.includes('recesso')) cat = 'Recesso';
+                else if (descLower.includes('expediente reduzido') || descLower.includes('reduzido')) cat = 'Expediente Reduzido';
+                else if (descLower.includes('facultativo')) cat = 'Ponto Facultativo';
+                else if (descLower.includes('semana santa') || descLower.includes('carnaval')) cat = est.descricao;
+
+                let dIniParsed = parseDataBRGlob(est.dataFormatted.split(' a ')[0] + '/' + ano);
+                let dFimParsed = parseDataBRGlob((est.dataFormatted.split(' a ')[1] || est.dataFormatted.split(' a ')[0]) + '/' + ano);
+                
+                estruturasSemana.push({
+                    cat: cat,
+                    descricao: est.descricao,
+                    dIniStr: est.dataFormatted.split(' a ')[0],
+                    dFimStr: est.dataFormatted.split(' a ')[1] || est.dataFormatted.split(' a ')[0],
+                    dIniTime: dIniParsed ? dIniParsed.getTime() : 0,
+                    dFimTime: dFimParsed ? dFimParsed.getTime() : 0
+                });
+            });
+        });
+
+        estruturasSemana.sort((a, b) => a.dIniTime - b.dIniTime);
+
+        let obsItensConsolidados = [];
+        estruturasSemana.forEach(item => {
+            if (obsItensConsolidados.length === 0) {
+                obsItensConsolidados.push({ ...item });
+            } else {
+                let ultimo = obsItensConsolidados[obsItensConsolidados.length - 1];
+                let mesmoTipo = ultimo.cat === item.cat && ultimo.descricao === item.descricao;
+                let contiguo = (item.dIniTime - ultimo.dFimTime) <= (24 * 60 * 60 * 1000);
+
+                if (mesmoTipo && contiguo) {
+                    ultimo.dFimStr = item.dFimStr;
+                    ultimo.dFimTime = item.dFimTime;
+                } else {
+                    obsItensConsolidados.push({ ...item });
+                }
+            }
+        });
+
+        let obsParts = [];
+        obsItensConsolidados.forEach(item => {
+            let dateStr = (item.dIniStr !== item.dFimStr) ? `${item.dIniStr} a ${item.dFimStr}` : item.dIniStr;
+            if (item.cat === item.descricao) {
+              obsParts.push(`${item.cat} (${dateStr})`);
+            } else if (dateStr) {
+              obsParts.push(`${item.cat}: ${dateStr}`);
+            } else {
+              obsParts.push(item.cat);
+            }
+        });
+        let obsStr = obsParts.join(', ');
+        
+        trs += `
+            <tr>
+                <td>${ano}</td>
+                <td>${numSemana}</td>
+                <td>${periodoHtml}</td>
+                <td>${metaStr}</td>
+                <td><strong>${ptsStr}</strong></td>
+                <td class="text-left">${escapeHtml(obsStr)}</td>
+            </tr>
+        `;
+    });
+    
+    return `
+        <div class="print-main-title" style="text-align: center; margin-bottom: 20px;">Resumo de Acompanhamento - Teletrabalho</div>
+        <div style="margin-bottom: 20px; font-size: 11pt; line-height: 1.5;">
+            <strong>Servidor:</strong> ${escapeHtml(servidor)}<br>
+            <strong>Unidade:</strong> ${escapeHtml(unidade)}<br>
+            <strong>Responsável:</strong> ${escapeHtml(responsavel)}<br>
+            <strong>Meta:</strong> 121 pontos <span style="font-size: 0.85em; font-style: italic;">(para dias sem observações)</span><br>
+        </div>
+        <table class="print-summary-table">
+            <thead>
+                <tr>
+                    <th style="width: 60px;">Ano</th>
+                    <th style="width: 70px;">Semana</th>
+                    <th style="width: 80px;">Período</th>
+                    <th style="width: 70px;">Meta</th>
+                    <th style="width: 80px;">Pontos</th>
+                    <th class="text-left">Observações</th>
+                </tr>
+            </thead>
+            <tbody>${trs}</tbody>
+        </table>
+    `;
+  }
+
+  function imprimirSemanaAtual() {
+    if (!dados || !dadosArquivo) return;
+    const printArea = document.getElementById('printArea');
+    printArea.innerHTML = `<div class="print-week-container">${gerarHtmlImpressaoSemana(dados)}</div>`;
+    window.print();
+  }
+
+  document.getElementById('btnAbrirModalPdfConsolidado').addEventListener('click', () => {
+    if (!dadosArquivo || !dadosArquivo.semanas || dadosArquivo.semanas.length === 0) {
+        customAlert("Não há semanas cadastradas para gerar o PDF Consolidado.");
+        return;
+    }
+    const selIni = document.getElementById('selSemanaInicial');
+    const selFim = document.getElementById('selSemanaFinal');
+    selIni.innerHTML = ''; selFim.innerHTML = '';
+    document.getElementById('chkDescartarZeradasConsolidado').checked = false;
+    
+    let semanasOrdenadas = [...dadosArquivo.semanas].sort((a, b) => obterValorOrdenacaoSemana(a.semanaAno) - obterValorOrdenacaoSemana(b.semanaAno));
+    semanasOrdenadas.forEach(sem => {
+        selIni.add(new Option(sem.semanaAno, sem.semanaAno));
+        selFim.add(new Option(sem.semanaAno, sem.semanaAno));
+    });
+    selIni.value = semanasOrdenadas[0].semanaAno;
+    selFim.value = semanasOrdenadas[semanasOrdenadas.length-1].semanaAno;
+    showModalFocus('modalPdfConsolidado');
+  });
+
+  document.getElementById('btnAbrirModalPdfResumo').addEventListener('click', () => {
+    if (!dadosArquivo || !dadosArquivo.semanas || dadosArquivo.semanas.length === 0) {
+        customAlert("Não há semanas cadastradas para gerar o Resumo.");
+        return;
+    }
+    const selIni = document.getElementById('selSemanaInicialResumo');
+    const selFim = document.getElementById('selSemanaFinalResumo');
+    selIni.innerHTML = ''; selFim.innerHTML = '';
+    document.getElementById('chkDescartarZeradasResumo').checked = false;
+    
+    let semanasOrdenadas = [...dadosArquivo.semanas].sort((a, b) => obterValorOrdenacaoSemana(a.semanaAno) - obterValorOrdenacaoSemana(b.semanaAno));
+    semanasOrdenadas.forEach(sem => {
+        selIni.add(new Option(sem.semanaAno, sem.semanaAno));
+        selFim.add(new Option(sem.semanaAno, sem.semanaAno));
+    });
+    selIni.value = semanasOrdenadas[0].semanaAno;
+    selFim.value = semanasOrdenadas[semanasOrdenadas.length-1].semanaAno;
+    showModalFocus('modalPdfResumo');
+  });
+
+  document.getElementById('btnGerarPdfConsolidado').addEventListener('click', () => {
+    const labelIni = document.getElementById('selSemanaInicial').value;
+    const labelFim = document.getElementById('selSemanaFinal').value;
+    const descartarZeradas = document.getElementById('chkDescartarZeradasConsolidado').checked;
+    const valIni = obterValorOrdenacaoSemana(labelIni);
+    const valFim = obterValorOrdenacaoSemana(labelFim);
+    
+    if (valIni > valFim) {
+        customAlert("A semana inicial deve ser anterior ou igual à semana final.");
+        return;
+    }
+
+    const semanasFiltradas = dadosArquivo.semanas.filter(sem => {
+        const num = obterValorOrdenacaoSemana(sem.semanaAno);
+        const meta = sem.cabecalho?.meta ?? 0;
+        if (descartarZeradas && meta === 0) return false;
+        return num >= valIni && num <= valFim;
+    }).sort((a, b) => obterValorOrdenacaoSemana(a.semanaAno) - obterValorOrdenacaoSemana(b.semanaAno));
+
+    if (semanasFiltradas.length === 0) {
+        customAlert("Nenhuma semana encontrada nesse intervalo com os critérios selecionados.");
+        return;
+    }
+
+    const printArea = document.getElementById('printArea');
+    let htmlFinal = '';
+    semanasFiltradas.forEach((sem, index) => {
+        const pageBreakClass = index > 0 ? 'page-break' : '';
+        htmlFinal += `<div class="print-week-container ${pageBreakClass}">${gerarHtmlImpressaoSemana(sem)}</div>`;
+    });
+    printArea.innerHTML = htmlFinal;
+    document.getElementById('modalPdfConsolidado').classList.remove('active');
+    window.print();
+  });
+
+  document.getElementById('btnGerarPdfResumo').addEventListener('click', () => {
+    const labelIni = document.getElementById('selSemanaInicialResumo').value;
+    const labelFim = document.getElementById('selSemanaFinalResumo').value;
+    const descartarZeradas = document.getElementById('chkDescartarZeradasResumo').checked;
+    const valIni = obterValorOrdenacaoSemana(labelIni);
+    const valFim = obterValorOrdenacaoSemana(labelFim);
+    
+    if (valIni > valFim) {
+        customAlert("A semana inicial deve ser anterior ou igual à semana final.");
+        return;
+    }
+
+    const semanasFiltradas = dadosArquivo.semanas.filter(sem => {
+        const num = obterValorOrdenacaoSemana(sem.semanaAno);
+        const meta = sem.cabecalho?.meta ?? 0;
+        if (descartarZeradas && meta === 0) return false;
+        return num >= valIni && num <= valFim;
+    }).sort((a, b) => obterValorOrdenacaoSemana(a.semanaAno) - obterValorOrdenacaoSemana(b.semanaAno));
+
+    if (semanasFiltradas.length === 0) {
+        customAlert("Nenhuma semana encontrada nesse intervalo com os critérios selecionados.");
+        return;
+    }
+
+    const printArea = document.getElementById('printArea');
+    const wrap = semanasFiltradas.map(s => ({sem: s}));
+    printArea.innerHTML = gerarHtmlImpressaoResumo(wrap);
+    document.getElementById('modalPdfResumo').classList.remove('active');
+    window.print();
+  });
+
+  function getNumeroSemanaISO(d) {
+    d = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+    d.setUTCDate(d.getUTCDate() + 4 - (d.getUTCDay() || 7));
+    const startOfYear = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+    return Math.ceil((((d - startOfYear) / 86400000) + 1) / 7);
+  }
+
+  function getDatasSegundaESexta(semanaNum, ano) {
+    const simple = new Date(Date.UTC(ano, 0, 1 + (semanaNum - 1) * 7));
+    const dow = simple.getUTCDay();
+    const ISOweekStart = simple;
+    if (dow <= 4) ISOweekStart.setUTCDate(simple.getUTCDate() - simple.getUTCDay() + 1);
+    else ISOweekStart.setUTCDate(simple.getUTCDate() + (8 - simple.getUTCDay()));
+    const segunda = new Date(ISOweekStart);
+    const sexta = new Date(ISOweekStart);
+    sexta.setUTCDate(segunda.getUTCDate() + 4);
+    return { segunda, sexta };
+  }
+
+  function formatarDataBR(date) {
+    const dia = String(date.getUTCDate()).padStart(2, '0');
+    const mes = String(date.getUTCMonth() + 1).padStart(2, '0');
+    return `${dia}/${mes}/${date.getUTCFullYear()}`;
+  }
+
+  function converterBRParaInput(strBR) {
+    if (!strBR) return '';
+    const partes = strBR.split('/');
+    if (partes.length === 3) return `${partes[2]}-${partes[1].padStart(2, '0')}-${partes[0].padStart(2, '0')}`;
+    return '';
+  }
+
+  function converterInputParaBR(strInput) {
+    if (!strInput) return '';
+    const partes = strInput.split('-');
+    if (partes.length === 3) return `${partes[2]}/${partes[1]}/${partes[0]}`;
+    return '';
+  }
+
+  function calcularMetaParaSemana(sem, dInicio, dFim) {
+    const diffTime = Math.abs(dFim - dInicio);
+    const diasCorridos = Math.round(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    let diasDescontadosEfetivos = 0;
+    const descontosPorDia = new Map();
+
+    (sem.cabecalho.feriados || []).forEach(objFeriado => {
+      if (objFeriado && objFeriado.data) {
+        const pInicio = objFeriado.data.split('/');
+        const pFim = (objFeriado.dataFim || objFeriado.data).split('/');
+        if (pInicio.length === 3 && pFim.length === 3) {
+          const dFIni = new Date(Date.UTC(parseInt(pInicio[2], 10), parseInt(pInicio[1], 10) - 1, parseInt(pInicio[0], 10)));
+          const dFFim = new Date(Date.UTC(parseInt(pFim[2], 10), parseInt(pFim[1], 10) - 1, parseInt(pFim[0], 10)));
+          let curr = new Date(dFIni);
+          while (curr <= dFFim) {
+            if (curr >= dInicio && curr <= dFim) {
+              const diaSemana = curr.getUTCDay();
+              // Desconta apenas dias úteis
+              if (diaSemana !== 0 && diaSemana !== 6) {
+                const k = curr.getTime();
+                const f = objFeriado.fator !== undefined ? Number(objFeriado.fator) : 1.0;
+                const e = descontosPorDia.get(k) || 0;
+                if (f > e) descontosPorDia.set(k, f);
+              }
+            }
+            curr.setUTCDate(curr.getUTCDate() + 1);
+          }
+        }
+      }
+    });
+
+    descontosPorDia.forEach(val => diasDescontadosEfetivos += val);
+    const META_POR_DIA = 24.2;
+    const diasEfetivos = Math.max(0, diasCorridos - diasDescontadosEfetivos);
+    return Math.round((diasEfetivos * META_POR_DIA) * 100) / 100;
+  }
+
+  function calcularMetaDinamica() {
+    if(!dados) return 121;
+    const periodoStr = dados.cabecalho?.periodo || '';
+    if (!periodoStr.includes(' a ')) return 121;
+    
+    const [inicioBR, fimBR] = periodoStr.split(' a ').map(s => s.trim());
+    const dtInicioStr = converterBRParaInput(inicioBR);
+    const dtFimStr = converterBRParaInput(fimBR);
+    
+    if (!dtInicioStr || !dtFimStr) return 121;
+    
+    const dInicio = new Date(dtInicioStr + 'T00:00:00Z');
+    const dFim = new Date(dtFimStr + 'T00:00:00Z');
+    return calcularMetaParaSemana(dados, dInicio, dFim);
+  }
+
+  function atualizarMetaInterface() {
+    if(!dados) return;
+    const novaMeta = calcularMetaDinamica();
+    dados.cabecalho.meta = novaMeta;
+    document.getElementById('lblMeta').innerText = novaMeta.toString().replace('.', ',');
+  }
+
+  function sincronizarTodosFeriadosSemanas() {
+    if(!dadosArquivo || !dadosArquivo.semanas) return;
+    
+    dadosArquivo.semanas.forEach(sem => {
+      const periodoStr = sem.cabecalho?.periodo || '';
+      if (!periodoStr.includes(' a ')) return;
+      
+      const [inicioBR, fimBR] = periodoStr.split(' a ').map(s => s.trim());
+      const dtInicioStr = converterBRParaInput(inicioBR);
+      const dtFimStr = converterBRParaInput(fimBR);
+      
+      if (!dtInicioStr || !dtFimStr) return;
+
+      const dInicio = new Date(dtInicioStr + 'T00:00:00Z');
+      const dFim = new Date(dtFimStr + 'T00:00:00Z');
+
+      sem.cabecalho.feriados = (dadosArquivo.feriadosGlobais || []).filter(item => {
+        if (!item.data) return false;
+        const pInicio = item.data.split('/');
+        const pFim = (item.dataFim || item.data).split('/');
+        if (pInicio.length !== 3 || pFim.length !== 3) return false;
+        
+        const dFIni = new Date(Date.UTC(parseInt(pInicio[2], 10), parseInt(pInicio[1], 10) - 1, parseInt(pInicio[0], 10)));
+        const dFFim = new Date(Date.UTC(parseInt(pFim[2], 10), parseInt(pFim[1], 10) - 1, parseInt(pFim[0], 10)));
+        
+        return (dFIni <= dFim && dFFim >= dInicio && dFIni <= dFim && dFim >= dFIni);
+      }).map(item => ({ ...item }));
+
+      sem.cabecalho.meta = calcularMetaParaSemana(sem, dInicio, dFim);
+    });
+  }
+
+  function sincronizarFeriadosDaSemanaAtual() {
+    if(!dados || !dadosArquivo.feriadosGlobais) return;
+    
+    const periodoStr = dados.cabecalho?.periodo || '';
+    if (!periodoStr.includes(' a ')) {
+      dados.cabecalho.feriados = [];
+      renderFeriados();
+      return;
+    }
+    
+    const [inicioBR, fimBR] = periodoStr.split(' a ').map(s => s.trim());
+    const dtInicioStr = converterBRParaInput(inicioBR);
+    const dtFimStr = converterBRParaInput(fimBR);
+    
+    if (!dtInicioStr || !dtFimStr) {
+      dados.cabecalho.feriados = [];
+      renderFeriados();
+      return;
+    }
+
+    const dInicio = new Date(dtInicioStr + 'T00:00:00Z');
+    const dFim = new Date(dtFimStr + 'T00:00:00Z');
+
+    dados.cabecalho.feriados = dadosArquivo.feriadosGlobais.filter(item => {
+      if (!item.data) return false;
+      const pInicio = item.data.split('/');
+      const pFim = (item.dataFim || item.data).split('/');
+      if (pInicio.length !== 3 || pFim.length !== 3) return false;
+      
+      const dFIni = new Date(Date.UTC(parseInt(pInicio[2], 10), parseInt(pInicio[1], 10) - 1, parseInt(pInicio[0], 10)));
+      const dFFim = new Date(Date.UTC(parseInt(pFim[2], 10), parseInt(pFim[1], 10) - 1, parseInt(pFim[0], 10)));
+      
+      return (dFIni <= dFim && dFFim >= dInicio);
+    }).map(item => ({ ...item }));
+    
+    renderFeriados();
+  }
+
+  function renderFeriados() {
+    if(!dados) return;
+    const container = document.getElementById('containerFeriados');
+    container.innerHTML = '';
+    let lista = dados.cabecalho.feriados || [];
+
+    const periodoStr = dados.cabecalho?.periodo || '';
+    let dtInicioStr = '', dtFimStr = '';
+    if (periodoStr.includes(' a ')) {
+       [dtInicioStr, dtFimStr] = periodoStr.split(' a ').map(s => s.trim());
+    }
+
+    if (lista.length === 0) {
+      container.innerHTML = '<span style="font-size: 0.85rem; color: var(--subtext); font-style: italic;">Nenhum registro no período.</span>';
+    } else {
+      let agrupados = agruparFeriadosSemanas(lista);
+      agrupados.forEach((item) => {
+        const estruturas = obterEstruturasFeriadoQuebrado(item, dtInicioStr, dtFimStr);
+        estruturas.forEach(est => {
+          const chip = document.createElement('div');
+          chip.className = `feriado-chip clickable ${est.categoriaClass}`;
+          chip.onclick = () => customAlert(est.fixo ? "Este é um registro fixo da base anual (não editável)." : "Este registro vem da base anual. Edite-o na tela inicial (Lista de Semanas).");
+          
+          chip.innerHTML = `
+            <span class="chip-date">${escapeHtml(est.dataFormatted)}</span>
+            ${est.descricao ? `<span>- ${escapeHtml(est.descricao)}</span>` : ''}
+            ${est.horasReducao ? `<span class="chip-badge-hours">Redução ${est.horasReducao}h</span>` : ''}
+          `;
+          container.appendChild(chip);
+        });
+      });
+    }
+    atualizarMetaInterface();
+    recalcularTudo();
+    renderAtividades();
+  }
+
+  const modalFeriado = document.getElementById('modalFeriadoRecesso');
+  
+  function alterarCamposModalFeriado() {
+    const cat = document.getElementById('modalSelCategoria').value;
+    document.getElementById('grupoModalDataUnica').style.display = (cat === 'feriado') ? 'block' : 'none';
+    document.getElementById('grupoModalDatasIntervalo').style.display = (cat === 'feriado') ? 'none' : 'grid';
+    document.getElementById('grupoModalOpcoesRecesso').style.display = (cat === 'recesso') ? 'block' : 'none';
+    
+    if (cat === 'recesso') {
+      toggleModalHorasReducao();
+    } else {
+      document.getElementById('modalSelTipoReducao').value = 'total';
+      document.getElementById('grupoModalHorasInput').style.display = 'none';
+    }
+
+    const descEl = document.getElementById('modalTxtDescricao');
+    if (descEl.value.trim() === '' || descEl.value === 'Férias' || descEl.value === 'Banco de Horas' || descEl.value === 'Feriado' || descEl.value === 'Recesso' || descEl.value === 'Dia Presencial' || descEl.value === 'Ponto Facultativo' || descEl.value === 'Expediente Reduzido') {
+      if(cat === 'ferias') descEl.value = 'Férias';
+      else if(cat === 'banco_horas') descEl.value = 'Banco de Horas';
+      else if(cat === 'recesso') descEl.value = 'Recesso';
+      else if(cat === 'presencial') descEl.value = 'Dia Presencial';
+      else if(cat === 'ponto_facultativo') descEl.value = 'Ponto Facultativo';
+      else descEl.value = '';
+    }
+  }
+
+  function toggleModalHorasReducao() {
+    const tipoRed = document.getElementById('modalSelTipoReducao').value;
+    document.getElementById('grupoModalHorasInput').style.display = (tipoRed === 'parcial') ? 'block' : 'none';
+  }
+
+  function abrirModalFeriado(index = -1) {
+    indexFeriadoModal = index;
+    document.getElementById('lblTituloModalFeriado').innerText = (index === -1) ? "Adicionar Paralização" : "Alterar Paralização";
+
+    if (index === -1) {
+      document.getElementById('modalSelCategoria').value = 'feriado';
+      document.getElementById('modalDtFeriadoUnico').value = '';
+      document.getElementById('modalDtInicioRecesso').value = '';
+      document.getElementById('modalDtFimRecesso').value = '';
+      document.getElementById('modalTxtDescricao').value = '';
+      document.getElementById('modalSelTipoReducao').value = 'total';
+      document.getElementById('modalNumHoras').value = '2';
+    } else {
+      let itemBase = dadosArquivo.feriadosGlobais[index];
+      const isDataUnica = (!itemBase.dataFim || itemBase.data === itemBase.dataFim) && (itemBase.fator === undefined || itemBase.fator === 1.0);
+      let catValue = isDataUnica ? 'feriado' : 'recesso';
+      const descLower = (itemBase.descricao || '').toLowerCase();
+      
+      if (descLower.includes('férias') || descLower.includes('ferias')) catValue = 'ferias';
+      else if (descLower.includes('banco de horas')) catValue = 'banco_horas';
+      else if (descLower.includes('presencial')) catValue = 'presencial';
+      else if (descLower.includes('facultativo')) catValue = 'ponto_facultativo';
+
+      document.getElementById('modalSelCategoria').value = catValue;
+      document.getElementById('modalTxtDescricao').value = itemBase.descricao || '';
+      
+      if (catValue === 'feriado') {
+        document.getElementById('modalDtFeriadoUnico').value = converterBRParaInput(itemBase.data);
+      } else {
+        document.getElementById('modalDtInicioRecesso').value = converterBRParaInput(itemBase.data);
+        document.getElementById('modalDtFimRecesso').value = converterBRParaInput(itemBase.dataFim || itemBase.data);
+        
+        if (itemBase.fator !== undefined && itemBase.fator < 1.0) {
+          document.getElementById('modalSelTipoReducao').value = 'parcial';
+          document.getElementById('modalNumHoras').value = Math.round((itemBase.fator * 7) * 10) / 10;
+        } else {
+          document.getElementById('modalSelTipoReducao').value = 'total';
+        }
+      }
+    }
+    alterarCamposModalFeriado();
+    showModalFocus('modalFeriadoRecesso');
+  }
+
+  document.getElementById('btnCancelarModalFeriado').addEventListener('click', () => modalFeriado.classList.remove('active'));
+
+  document.getElementById('btnConfirmarModalFeriado').addEventListener('click', () => {
+    const cat = document.getElementById('modalSelCategoria').value;
+    const desc = document.getElementById('modalTxtDescricao').value.trim();
+    let valInicio = '', valFim = '', fator = 1.0;
+
+    if (cat === 'feriado') {
+      valInicio = document.getElementById('modalDtFeriadoUnico').value;
+      valFim = valInicio;
+      if (!valInicio) return customAlert('Por favor, selecione a data do feriado.');
+    } else {
+      valInicio = document.getElementById('modalDtInicioRecesso').value;
+      valFim = document.getElementById('modalDtFimRecesso').value || valInicio;
+      if (!valInicio) return customAlert('Por favor, selecione ao menos a data inicial do registro.');
+      if (valFim < valInicio) return customAlert('A data final não pode ser anterior à data inicial.');
+      
+      if (cat === 'recesso' && document.getElementById('modalSelTipoReducao').value === 'parcial') {
+        const hVal = parseFloat(document.getElementById('modalNumHoras').value);
+        if (isNaN(hVal) || hVal <= 0 || hVal > 7) return customAlert('Informe um valor válido entre 0.1 e 7.');
+        fator = hVal / 7.0;
+      }
+    }
+
+    const novoItem = { 
+      data: converterInputParaBR(valInicio), 
+      dataFim: converterInputParaBR(valFim), 
+      descricao: desc, 
+      fator: fator,
+      fixo: false
+    };
+
+    if (!dadosArquivo.feriadosGlobais) dadosArquivo.feriadosGlobais = [];
+    if (indexFeriadoModal === -1) {
+      dadosArquivo.feriadosGlobais.push(novoItem);
+    } else {
+      dadosArquivo.feriadosGlobais[indexFeriadoModal] = novoItem;
+    }
+    
+    registrarAlteracao();
+    sincronizarTodosFeriadosSemanas();
+    renderFeriadosGlobais();
+    if (dados) { renderFeriados(); }
+    modalFeriado.classList.remove('active');
+  });
+
+  const modalExplicacao = document.getElementById('modalExplicacaoAtividade');
+  function abrirModalExplicacao(nomeAtividade) {
+    const ref = TABELA_REFERENCIA_ATIVIDADES.find(r => r.nome.toLowerCase() === (nomeAtividade || '').toLowerCase());
+    if (!ref) return customAlert('Nenhuma referência cadastrada para esta atividade.');
+    document.getElementById('modalExplicacaoTitulo').innerText = `Atividade: ${ref.nome}`;
+    document.getElementById('modalExplicacaoDescricao').innerText = ref.descricao;
+    document.getElementById('modalExplicacaoPontuacao').innerText = ref.pontuacaoRef;
+    showModalFocus('modalExplicacaoAtividade');
+  }
+  document.getElementById('btnFecharModalExplicacao').addEventListener('click', () => modalExplicacao.classList.remove('active'));
+
+  function garantirAtividadePadrao() {
+    if(!dados) return;
+    if (!Array.isArray(dados.atividades)) dados.atividades = [];
+    const meta = calcularMetaDinamica();
+    const isBloqueada = meta <= 0;
+    const temPadrao = dados.atividades.length > 0 && dados.atividades[0].atividade === ATIVIDADE_PADRAO.atividade;
+
+    if (isBloqueada) {
+      if (temPadrao) dados.atividades.shift();
+    } else {
+      if (!temPadrao) dados.atividades.unshift({ ...ATIVIDADE_PADRAO });
+    }
+  }
+
+  function calcularPontosAtividade(item) {
+    const peso = PESOS_COMPLEXIDADE[item.complexidade] || 1.0;
+    if (item.atividade === "Relatório de atividades") return 12;
+    if (item.atividade === "Registro de melhoria") return Math.round((2 * peso) * 100) / 100;
+    if (item.atividade === "Registro de erro") return Math.round((1 * peso) * 100) / 100;
+
+    let pontosBase = (Number(item.esforco) || 0) * 4; 
+    const isGranular = ["Reunião", "Capacitação", "Atividade extraordinária"].includes(item.atividade);
+    const pool = isGranular ? OPCOES_ESFORCO_GRANULAR : OPCOES_ESFORCO;
+    
+    const encontrada = pool.find(o => o.valor === Number(item.esforco));
+    if (encontrada) pontosBase = encontrada.basePts;
+    
+    return Math.round((pontosBase * peso) * 100) / 100;
+  }
+
+  function recalcularTudo() {
+    if(!dados) return;
+    garantirAtividadePadrao();
+    let totalPontos = 0;
+    dados.atividades.forEach((item) => {
+      item.complexidade = item.complexidade || 'Baixa';
+      item.pontos = calcularPontosAtividade(item);
+      totalPontos += item.pontos;
+    });
+    dados.cabecalho.pontuacaoTotal = Math.round(totalPontos * 100) / 100;
+    document.getElementById('lblPontuacaoTotal').innerText = dados.cabecalho.pontuacaoTotal.toString().replace('.', ',');
+  }
+
+  function getOpenIndices() {
+    const openIndices = [];
+    document.querySelectorAll('.atividade-box').forEach((box, i) => { if (box.classList.contains('active')) openIndices.push(i); });
+    return openIndices;
+  }
+
+  function renderAtividades(openIndices = []) {
+    if(!dados) return;
+    garantirAtividadePadrao();
+    const container = document.getElementById('containerAtividades');
+    container.innerHTML = '';
+
+    const meta = calcularMetaDinamica();
+    const isBloqueada = meta <= 0;
+    document.getElementById('btnAdicionarAtividade').style.display = isBloqueada ? 'none' : 'inline-block';
+
+    if (isBloqueada && dados.atividades.length === 0) {
+      container.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--subtext); font-style: italic;">Devido às paralizações de teletrabalho nesta semana, não é permitido registrar atividades</div>';
+      return;
+    }
+
+    dados.atividades.forEach((item, index) => {
+      const isPadrao = (index === 0 && item.atividade === ATIVIDADE_PADRAO.atividade);
+      const boxId = `atividadeBox_${index}`;
+      
+      let esforcoLabel = `${item.esforco}h`;
+      const isGranular = ["Reunião", "Capacitação", "Atividade extraordinária"].includes(item.atividade);
+      const pool = isGranular ? OPCOES_ESFORCO_GRANULAR : OPCOES_ESFORCO;
+      
+      const encontrada = pool.find(o => o.valor === Number(item.esforco));
+      if (encontrada) esforcoLabel = encontrada.label;
+
+      let valPts = item.pontos || 0;
+      let strPts = valPts < 10 ? `0${valPts}` : `${valPts}`;
+      let strPtsFormatted = strPts.toString().replace('.', ',');
+      let htmlEvidenciaFull = migrateToHTML(item.evidencia);
+      let evdHtmlHeader = htmlEvidenciaFull.replace(/<br\s*[\/]?>/gi, ' ');
+      
+      let tempDiv = document.createElement('div');
+      tempDiv.innerHTML = htmlEvidenciaFull;
+      let evdPlain = (tempDiv.textContent || tempDiv.innerText || "").replace(/\s+/g, ' ').trim();
+
+      const div = document.createElement('div');
+      div.className = `atividade-box ${openIndices.includes(index) ? 'active' : ''}`;
+      div.id = boxId;
+
+      div.innerHTML = `
+        <div class="atividade-header-bar" onclick="toggleAtividadeCollapse('${boxId}')">
+          <div style="display: flex; align-items: center; overflow: hidden; flex: 1;">
+            ${(!isPadrao && !isBloqueada) ? `<span class="drag-handle" onclick="event.stopPropagation()" style="cursor: grab; margin-right: 12px; font-size: 1.2rem; color: var(--subtext); user-select: none;" title="Arraste para reordenar">☰</span>` : ''}
+            <div class="atividade-summary" id="lblAtividadeResumo_${index}" title="${escapeHtml(evdPlain)}">
+              <span class="badge-pontuacao-suave">${strPtsFormatted} pts</span> - <strong>${escapeHtml(item.atividade)}</strong> - <span style="font-weight: 400; color: var(--subtext);">${evdHtmlHeader}</span>
+            </div>
+          </div>
+          <div class="atividade-header-right">
+            ${isPadrao ? '<span style="font-size: 0.75rem; color: var(--subtext); font-style: italic; background: rgba(0,0,0,0.06); padding: 2px 6px; border-radius: 4px; margin-right: 4px;">Padrão</span>' : ''}
+            ${(!isPadrao && !isBloqueada) ? `<button type="button" class="btn-primary btn-alterar-atividade" style="font-size: 0.75rem; padding: 4px 8px; margin-right: 4px;" data-index="${index}">Alterar</button>` : ''}
+            ${(!isPadrao && !isBloqueada) ? `<button type="button" class="btn-danger btn-excluir-atividade" style="font-size: 0.75rem; padding: 4px 8px; margin-right: 4px;" data-index="${index}">Excluir</button>` : ''}
+            ${isBloqueada ? `<span style="font-size: 0.75rem; color: var(--subtext); font-style: italic; margin-right: 4px;">Bloqueada</span>` : ''}
+            <span class="atividade-icon" style="margin-left: 4px;">▼</span>
+          </div>
+        </div>
+        <div class="atividade-content">
+          <div style="font-size: 0.95rem; color: var(--text);">
+            <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+              <button type="button" class="btn-info-square" style="width: 22px; height: 22px; font-size: 0.8rem;" onclick="event.stopPropagation(); abrirModalExplicacao('${escapeHtml(item.atividade)}')">i</button>
+              <strong>${escapeHtml(item.atividade)}</strong>
+            </div>
+            
+            <div style="margin-bottom: 16px;">
+              <strong style="display: block; margin-bottom: 4px;">Evidência:</strong>
+              <div style="background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; border: 1px solid var(--border); overflow-wrap: break-word; line-height: 1.4;">
+                ${htmlEvidenciaFull || '<em style="color:#94a3b8">Nenhuma</em>'}
+              </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+              <strong style="display: block; margin-bottom: 4px;">Justificativa:</strong>
+              <div style="background: rgba(0,0,0,0.03); padding: 10px; border-radius: 6px; border: 1px solid var(--border); overflow-wrap: break-word; line-height: 1.4;">
+                ${migrateToHTML(item.justificativa) || '<em style="color:#94a3b8">Nenhuma</em>'}
+              </div>
+            </div>
+
+            <div style="display: flex; gap: 20px; background: rgba(0,0,0,0.03); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--border);">
+              <span><strong>Esforço:</strong> ${esforcoLabel}</span>
+              <span><strong>Complexidade:</strong> ${item.complexidade || 'Baixa'}</span>
+              <span><strong>Pontos:</strong> ${item.pontos}</span>
+            </div>
+          </div>
+        </div>
+      `;
+      container.appendChild(div);
+
+      if (!isPadrao && !isBloqueada) {
+        const handle = div.querySelector('.drag-handle');
+        if (handle) {
+          handle.addEventListener('mousedown', () => div.setAttribute('draggable', 'true'));
+          handle.addEventListener('mouseup', () => div.setAttribute('draggable', 'false'));
+          handle.addEventListener('mouseleave', () => div.setAttribute('draggable', 'false'));
+        }
+
+        div.addEventListener('dragstart', (e) => {
+          draggedAtividadeIndex = index;
+          e.dataTransfer.effectAllowed = 'move';
+          e.dataTransfer.setData('text/plain', index);
+          setTimeout(() => div.classList.add('dragging'), 0);
+        });
+
+        div.addEventListener('dragend', () => {
+          div.classList.remove('dragging');
+          div.setAttribute('draggable', 'false');
+          draggedAtividadeIndex = null;
+          container.querySelectorAll('.atividade-box').forEach(b => b.classList.remove('drag-over'));
+        });
+
+        div.addEventListener('dragover', (e) => { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; });
+        div.addEventListener('dragenter', (e) => {
+          e.preventDefault();
+          if (draggedAtividadeIndex !== null && draggedAtividadeIndex !== index && !isPadrao) {
+            div.classList.add('drag-over');
+          }
+        });
+        div.addEventListener('dragleave', () => { div.classList.remove('drag-over'); });
+        div.addEventListener('drop', (e) => {
+          e.preventDefault();
+          div.classList.remove('drag-over');
+          if (draggedAtividadeIndex === null || draggedAtividadeIndex === index || isPadrao) return;
+
+          let currentOpen = getOpenIndices();
+          let nextOpen = [];
+          currentOpen.forEach(i => {
+            if (i === draggedAtividadeIndex) nextOpen.push(index);
+            else if (draggedAtividadeIndex < i && index >= i) nextOpen.push(i - 1);
+            else if (draggedAtividadeIndex > i && index <= i) nextOpen.push(i + 1);
+            else nextOpen.push(i);
+          });
+
+          const itemToMove = dados.atividades.splice(draggedAtividadeIndex, 1)[0];
+          dados.atividades.splice(index, 0, itemToMove);
+          registrarAlteracao();
+          recalcularTudo();
+          renderAtividades(nextOpen);
+        });
+      }
+    });
+
+    container.querySelectorAll('.btn-alterar-atividade').forEach(btn => btn.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); abrirModalAtividade(parseInt(btn.getAttribute('data-index'), 10)); }));
+    container.querySelectorAll('.btn-excluir-atividade').forEach(btn => btn.addEventListener('click', (e) => { 
+      e.preventDefault(); 
+      e.stopPropagation(); 
+      const index = parseInt(btn.getAttribute('data-index'), 10);
+      customConfirm('Deseja excluir esta atividade?', () => {
+        removerAtividadeDirect(index);
+      });
+    }));
+  }
+
+  function render() {
+    if(!dados) return;
+    document.getElementById('lblTituloCardSemana').innerText = dados.semanaAno || 'Semana do Ano';
+    
+    const periodoStr = dados.cabecalho?.periodo || '';
+    if (periodoStr.includes(' a ')) {
+      const [inicio, fim] = periodoStr.split(' a ').map(s => s.trim());
+      document.getElementById('dtInicioPeriodo').innerText = inicio;
+      document.getElementById('dtFimPeriodo').innerText = fim;
+    } else {
+      document.getElementById('dtInicioPeriodo').innerText = '';
+      document.getElementById('dtFimPeriodo').innerText = '';
+    }
+    renderFeriados();
+  }
+
+  function atualizarOpcoesEsforcoModal() {
+    const selAtiv = document.getElementById('modalSelAtividade');
+    const selEsf = document.getElementById('modalSelEsforco');
+    popularDropdownEsforco(selAtiv.value, selEsf.value);
+  }
+
+  function popularDropdownEsforco(atividadeNome, valorSelecionado = null) {
+    const selEsf = document.getElementById('modalSelEsforco');
+    selEsf.innerHTML = '';
+    
+    const isGranular = ["Reunião", "Capacitação", "Atividade extraordinária"].includes(atividadeNome);
+    const opcoes = isGranular ? OPCOES_ESFORCO_GRANULAR : OPCOES_ESFORCO;
+
+    let achouValor = false;
+    opcoes.forEach(op => {
+      const option = new Option(`${op.label} (${op.basePts} pt${op.basePts > 1 ? 's' : ''})`, op.valor);
+      selEsf.add(option);
+      if (Number(valorSelecionado) === op.valor) {
+        option.selected = true;
+        achouValor = true;
+      }
+    });
+
+    if (!achouValor && opcoes.length > 0) {
+      selEsf.value = opcoes[0].valor;
+    }
+  }
+
+  let editAtividadeIndex = -1;
+  function abrirModalAtividade(index = -1) {
+    if(!dados) return;
+    editAtividadeIndex = index;
+    const selAtiv = document.getElementById('modalSelAtividade');
+    const selEsf = document.getElementById('modalSelEsforco');
+    const txtEvid = document.getElementById('modalTxtEvidencia');
+    const txtJust = document.getElementById('modalTxtJustificativa');
+    const selComp = document.getElementById('modalSelComplexidade');
+    const titulo = document.getElementById('modalAtividadeTitulo');
+
+    if(selAtiv.options.length === 0) TABELA_REFERENCIA_ATIVIDADES.forEach(ref => selAtiv.add(new Option(ref.nome, ref.nome)));
+
+    if(index === -1) {
+      titulo.innerText = "Nova Atividade";
+      const primeiraRef = TABELA_REFERENCIA_ATIVIDADES.find(r => r.nome !== "Relatório de atividades");
+      selAtiv.value = primeiraRef ? primeiraRef.nome : "Reunião";
+      selAtiv.disabled = false; 
+      txtEvid.innerHTML = ""; 
+      txtJust.innerHTML = ""; 
+      selComp.value = "Baixa"; 
+      selComp.disabled = false;
+      popularDropdownEsforco(selAtiv.value, 1); 
+      selEsf.disabled = false;
+      Array.from(selAtiv.options).forEach(opt => opt.hidden = (opt.value === "Relatório de atividades"));
+    } else {
+      titulo.innerText = "Alterar Atividade";
+      const item = dados.atividades[index];
+      const isPadrao = (index === 0);
+      selAtiv.value = item.atividade; 
+      selAtiv.disabled = isPadrao;
+      txtEvid.innerHTML = migrateToHTML(item.evidencia); 
+      txtJust.innerHTML = migrateToHTML(item.justificativa);
+      selComp.value = item.complexidade || "Baixa"; 
+      selComp.disabled = isPadrao;
+      popularDropdownEsforco(selAtiv.value, item.esforco);
+      selEsf.disabled = isPadrao;
+      Array.from(selAtiv.options).forEach(opt => opt.hidden = (!isPadrao && opt.value === "Relatório de atividades"));
+    }
+    showModalFocus('modalEdicaoAtividade');
+  }
+
+  document.getElementById('btnCancelarModalAtividade').addEventListener('click', () => document.getElementById('modalEdicaoAtividade').classList.remove('active'));
+
+  function limparFormatacaoRTE(html) {
+    if (!html) return '';
+    let text = html.replace(/&nbsp;/g, ' ');
+
+    let tempDiv = document.createElement('div');
+    tempDiv.innerHTML = text;
+
+    const tagsPermitidas = ['A', 'B', 'STRONG', 'I', 'EM', 'U', 'UL', 'OL', 'LI', 'BR', 'DIV', 'P', 'SPAN'];
+
+    const elementos = tempDiv.querySelectorAll('*');
+    elementos.forEach(el => {
+      if (!tagsPermitidas.includes(el.nodeName)) {
+        while (el.firstChild) {
+          el.parentNode.insertBefore(el.firstChild, el);
+        }
+        el.parentNode.removeChild(el);
+      } else {
+        const atributos = Array.from(el.attributes);
+        atributos.forEach(attr => {
+          if (el.nodeName === 'A' && ['href', 'target', 'rel'].includes(attr.name)) {
+            return;
+          }
+          el.removeAttribute(attr.name);
+        });
+      }
+    });
+
+    return tempDiv.innerHTML;
+  }
+
+  document.getElementById('btnConfirmarModalAtividade').addEventListener('click', () => {
+    const itemData = {
+      atividade: document.getElementById('modalSelAtividade').value,
+      evidencia: limparFormatacaoRTE(document.getElementById('modalTxtEvidencia').innerHTML),
+      justificativa: limparFormatacaoRTE(document.getElementById('modalTxtJustificativa').innerHTML),
+      esforco: parseFloat(document.getElementById('modalSelEsforco').value),
+      complexidade: document.getElementById('modalSelComplexidade').value,
+      pontos: 0 
+    };
+
+    if (editAtividadeIndex === -1) {
+      dados.atividades.push(itemData);
+      registrarAlteracao();
+      recalcularTudo();
+      const openIndices = getOpenIndices();
+      openIndices.push(dados.atividades.length - 1);
+      renderAtividades(openIndices);
+    } else {
+      dados.atividades[editAtividadeIndex] = { ...dados.atividades[editAtividadeIndex], ...itemData };
+      registrarAlteracao();
+      recalcularTudo();
+      renderAtividades(getOpenIndices());
+    }
+    document.getElementById('modalEdicaoAtividade').classList.remove('active');
+  });
+
+  function removerAtividadeDirect(index) {
+    if (index === 0 || !dados) return;
+    const openIndices = [];
+    document.querySelectorAll('.atividade-box').forEach((box, i) => { if (box.classList.contains('active')) { if (i < index) openIndices.push(i); else if (i > index) openIndices.push(i - 1); } });
+    dados.atividades.splice(index, 1);
+    registrarAlteracao();
+    recalcularTudo();
+    renderAtividades(openIndices);
+  }
+
+  document.getElementById('btnAdicionarAtividade').addEventListener('click', () => abrirModalAtividade(-1));
+
+  function gerarOpcoesTodasSemanasAno(ano) {
+    const select = document.getElementById('selSemanaAnoModal');
+    select.innerHTML = '';
+    const semanaAtual = getNumeroSemanaISO(new Date());
+    let adicionouAlguma = false;
+
+    for (let i = 1; i <= 52; i++) {
+      const textoSemana = `${i}ª Semana de ${ano}`;
+      const jaExiste = dadosArquivo && dadosArquivo.semanas && dadosArquivo.semanas.some(s => s.semanaAno === textoSemana);
+
+      if (!jaExiste) {
+        const opt = document.createElement('option');
+        opt.value = i;
+        opt.innerText = textoSemana;
+        if (i === semanaAtual) opt.selected = true;
+        select.appendChild(opt);
+        adicionouAlguma = true;
+      }
+    }
+
+    if (!adicionouAlguma) {
+      const opt = document.createElement('option');
+      opt.value = "";
+      opt.innerText = "Todas as semanas já foram adicionadas";
+      select.appendChild(opt);
+    }
+  }
+
+  document.getElementById('btnAdicionarSemanaLista').addEventListener('click', () => {
+    gerarOpcoesTodasSemanasAno(dadosArquivo.ano);
+    showModalFocus('modalNovaSemana');
+  });
+
+  document.getElementById('btnCancelarModalNovaSemana').addEventListener('click', () => document.getElementById('modalNovaSemana').classList.remove('active'));
+
+  document.getElementById('btnConfirmarModalNovaSemana').addEventListener('click', () => {
+    const val = document.getElementById('selSemanaAnoModal').value;
+    if (!val) {
+       customAlert("Nenhuma semana válida selecionada.");
+       document.getElementById('modalNovaSemana').classList.remove('active');
+       return;
+    }
+
+    const numSemana = parseInt(val, 10);
+    const textoSemana = `${numSemana}ª Semana de ${dadosArquivo.ano}`;
+    
+    if(dadosArquivo.semanas.some(s => s.semanaAno === textoSemana)) {
+      customAlert('Esta semana já foi adicionada ao relatório.');
+      document.getElementById('modalNovaSemana').classList.remove('active');
+      return;
+    }
+
+    const { segunda, sexta } = getDatasSegundaESexta(numSemana, dadosArquivo.ano);
+    const periodoAuto = `${formatarDataBR(segunda)} a ${formatarDataBR(sexta)}`;
+    
+    const dInicio = new Date(Date.UTC(segunda.getUTCFullYear(), segunda.getUTCMonth(), segunda.getUTCDate()));
+    const dFim = new Date(Date.UTC(sexta.getUTCFullYear(), sexta.getUTCMonth(), sexta.getUTCDate()));
+
+    const feriadosAuto = (dadosArquivo.feriadosGlobais || []).filter(item => {
+        if (!item.data) return false;
+        const pInicio = item.data.split('/');
+        const pFim = (item.dataFim || item.data).split('/');
+        if (pInicio.length !== 3 || pFim.length !== 3) return false;
+        
+        const dFIni = new Date(Date.UTC(parseInt(pInicio[2], 10), parseInt(pInicio[1], 10) - 1, parseInt(pInicio[0], 10)));
+        const dFFim = new Date(Date.UTC(parseInt(pFim[2], 10), parseInt(pFim[1], 10) - 1, parseInt(pFim[0], 10)));
+        return (dFIni <= dFim && dFFim >= dInicio);
+    }).map(item => ({ ...item }));
+
+    const ativPadrao = { ...ATIVIDADE_PADRAO };
+    ativPadrao.pontos = calcularPontosAtividade(ativPadrao);
+
+    const novaSemana = {
+      semanaAno: textoSemana,
+      cabecalho: { periodo: periodoAuto, meta: 121, feriados: feriadosAuto, pontuacaoTotal: 0 },
+      atividades: [ativPadrao]
+    };
+
+    novaSemana.cabecalho.meta = calcularMetaParaSemana(novaSemana, dInicio, dFim);
+    if (novaSemana.cabecalho.meta <= 0) {
+      novaSemana.atividades = [];
+      novaSemana.cabecalho.pontuacaoTotal = 0;
+    } else {
+      novaSemana.cabecalho.pontuacaoTotal = ativPadrao.pontos;
+    }
+
+    dadosArquivo.semanas.push(novaSemana);
+    registrarAlteracao();
+    renderListaSemanas();
+    document.getElementById('modalNovaSemana').classList.remove('active');
+  });
+
+  document.getElementById('btnNovo').addEventListener('click', () => {
+    fileHandle = null;
+    situacaoAtual = 'Criando';
+    abrindoPelaPrimeiraVez = true;
+    abrirModalEdicaoGlobal();
+  });
+
+  document.getElementById('btnAbrir').addEventListener('click', async () => {
+    try {
+      let texto = '';
+      if ('showOpenFilePicker' in window) {
+        [fileHandle] = await window.showOpenFilePicker({ types: [{ description: 'Arquivos JSON', accept: { 'application/json': ['.json'] } }] });
+        const file = await fileHandle.getFile();
+        texto = await file.text();
+      } else {
+        const input = document.createElement('input');
+        input.type = 'file'; input.accept = '.json';
+        const fileContent = await new Promise((resolve) => {
+          input.onchange = e => {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = event => resolve(event.target.result);
+            reader.readAsText(file);
+          };
+          input.click();
+        });
+        texto = fileContent;
+      }
+
+      const parseData = JSON.parse(texto);
+      if(parseData.semanas && parseData.ano) {
+        dadosArquivo = parseData;
+        const feriadosNacionaisNovos = gerarFeriadosNacionais(dadosArquivo.ano);
+        if (!dadosArquivo.feriadosGlobais || dadosArquivo.feriadosGlobais.length === 0) {
+          dadosArquivo.feriadosGlobais = feriadosNacionaisNovos;
+        } else {
+          const itensManuais = dadosArquivo.feriadosGlobais.filter(f => f.fixo === false);
+          dadosArquivo.feriadosGlobais = [...feriadosNacionaisNovos, ...itensManuais];
+        }
+      } else {
+        dadosArquivo = { 
+          ano: ANO_CORRENTE, 
+          servidor: parseData.cabecalho?.servidor || CONFIG_PADRAO.servidor,
+          unidade: parseData.cabecalho?.unidade || CONFIG_PADRAO.unidade,
+          responsavel: parseData.cabecalho?.responsavel || CONFIG_PADRAO.responsavel,
+          feriadosGlobais: gerarFeriadosNacionais(ANO_CORRENTE),
+          semanas: [parseData],
+          ultimaAlteracao: new Date().toISOString()
+        };
+      }
+
+      if (!dadosArquivo.servidor) {
+        let sw = dadosArquivo.semanas[0];
+        dadosArquivo.servidor = sw?.cabecalho?.servidor || CONFIG_PADRAO.servidor;
+        dadosArquivo.unidade = sw?.cabecalho?.unidade || CONFIG_PADRAO.unidade;
+        dadosArquivo.responsavel = sw?.cabecalho?.responsavel || CONFIG_PADRAO.responsavel;
+      }
+      
+      situacaoAtual = 'Salvo';
+      sincronizarTodosFeriadosSemanas();
+      renderCabecalhoGlobal();
+      mostrarView('viewLista');
+      renderFeriadosGlobais();
+      renderListaSemanas();
+      renderUltimaAlteracao();
+    } catch (err) {
+      if (err.name !== 'AbortError') customAlert('Erro ao abrir o arquivo JSON.');
+    }
+  });
+
+  document.getElementById('btnSalvar').addEventListener('click', async () => {
+    if (dados) {
+      recalcularTudo();
+    }
+    if (!dadosArquivo) return;
+
+    dadosArquivo.semanas.forEach(s => {
+      if (s.cabecalho) {
+        delete s.cabecalho.servidor;
+        delete s.cabecalho.unidade;
+        delete s.cabecalho.responsavel;
+      }
+    });
+
+    const jsonStr = JSON.stringify(dadosArquivo, null, 2);
+    try {
+      if ('showSaveFilePicker' in window) {
+        if (!fileHandle) {
+          fileHandle = await window.showSaveFilePicker({
+            suggestedName: `relatorio_teletrabalho_${dadosArquivo.ano}.json`,
+            types: [{ description: 'Arquivo JSON', accept: { 'application/json': ['.json'] } }]
+          });
+        }
+        const writable = await fileHandle.createWritable();
+        await writable.write(jsonStr);
+        await writable.close();
+        situacaoAtual = 'Salvo';
+        renderUltimaAlteracao();
+        customAlert('Arquivo salvo com sucesso!');
+      } else {
+        const blob = new Blob([jsonStr], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `relatorio_teletrabalho_${dadosArquivo.ano}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+        situacaoAtual = 'Salvo';
+        renderUltimaAlteracao();
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') customAlert('Erro ao salvar o arquivo.');
+    }
+  });
+
+  mostrarView('viewInicial');
+</script>
+</body>
+</html>
